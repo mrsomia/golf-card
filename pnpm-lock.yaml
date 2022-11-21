@@ -38,16 +38,19 @@ importers:
 
   server:
     specifiers:
+      '@faker-js/faker': ^7.6.0
       '@types/express': ^4.17.14
       '@types/node': ^18.11.9
       express: ^4.18.2
       morgan: ^1.10.0
       nodemon: ^2.0.20
+      prisma: ^4.6.1
       socket.io: ^4.5.3
       ts-node: ^10.9.1
       tsx: ^3.11.0
       typescript: ^4.9.3
     dependencies:
+      '@faker-js/faker': 7.6.0
       express: 4.18.2
       morgan: 1.10.0
       socket.io: 4.5.3
@@ -55,6 +58,7 @@ importers:
       '@types/express': 4.17.14
       '@types/node': 18.11.9
       nodemon: 2.0.20
+      prisma: 4.6.1
       ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
       tsx: 3.11.0
       typescript: 4.9.3
@@ -374,6 +378,11 @@ packages:
     dev: true
     optional: true
 
+  /@faker-js/faker/7.6.0:
+    resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
+    engines: {node: '>=14.0.0', npm: '>=6.0.0'}
+    dev: false
+
   /@jridgewell/gen-mapping/0.1.1:
     resolution: {integrity: sha512-sQXCasFk+U8lWYEe66WxRDOE9PjVz4vSM51fTu3Hw+ClTpUSQb718772vH3pyS5pShp6lvQM7SxgIDXXXmOX7w==}
     engines: {node: '>=6.0.0'}
@@ -438,6 +447,11 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
+    dev: true
+
+  /@prisma/engines/4.6.1:
+    resolution: {integrity: sha512-3u2/XxvxB+Q7cMXHnKU0CpBiUK1QWqpgiBv28YDo1zOIJE3FCF8DI2vrp6vuwjGt5h0JGXDSvmSf4D4maVjJdw==}
+    requiresBuild: true
     dev: true
 
   /@remix-run/router/1.0.3:
@@ -1696,6 +1710,15 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: true
+
+  /prisma/4.6.1:
+    resolution: {integrity: sha512-BR4itMCuzrDV4tn3e2TF+nh1zIX/RVU0isKtKoN28ADeoJ9nYaMhiuRRkFd2TZN8+l/XfYzoRKyHzUFXLQhmBQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': 4.6.1
     dev: true
 
   /proxy-addr/2.0.7:
