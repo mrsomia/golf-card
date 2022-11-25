@@ -16,17 +16,21 @@ const io = new Server(httpServer, {
 const rooms: string[] = []
 
 const roomIo = io.of("/api/room")
-roomIo.on("connection", (socket) => {
+roomIo.on("connect", (socket) => {
     // validate room id on joining
+    socket.on("ping", () => {
+        console.log(`Received ping from ${socket.id}`)
+        socket.emit("pong")
+    })
     socket.on('join-room', (roomId) => {
         if (roomId in rooms) {
             //Add username to room
         }
     })
-  console.log(socket.id)
-  socket.on('update-state', (state) => {
-    socket.broadcast.emit("update-state", state)
-  })
+    console.log(socket.id)
+    socket.on('update-state', (state) => {
+        socket.broadcast.emit("update-state", state)
+    })
 });
 
 app.get('/', (_req, res) => res.json({ message: "hello world" }))
