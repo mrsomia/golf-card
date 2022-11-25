@@ -40,7 +40,7 @@ function JoinRoomPage() {
                 htmlFor="userName"
                 className='text-lg'
             >
-                Name
+                Your Name
             </label>
             <input 
                 type='text'

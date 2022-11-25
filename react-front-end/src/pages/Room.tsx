@@ -10,9 +10,7 @@ function Room() {
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
     const [lastPong, setLastPong] = useState<null | string>(null);
 
-    console.log({ socket })
-    let t = 't'
-
+    // Sets up the socket
     useEffect(() => {
         const socket = io(`${import.meta.env.VITE_SERVER_URL}/api/room`)
         setSocket(socket)
