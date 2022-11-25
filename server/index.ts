@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { faker } from '@faker-js/faker'
 
 const port = process.env.PORT || 8080
 
@@ -8,7 +9,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:3000"]
+    origin: ["http://localhost:3000", "http://localhost:5173"]
   }
 });
 
@@ -19,6 +20,18 @@ io.on("connection", (socket) => {
   })
 });
 
-app.get('/', (req, res) => res.json({ message: "hello world" }))
+app.get('/', (_req, res) => res.json({ message: "hello world" }))
+app.post('/create-room', (_req, res) => {
+    function createRoom() {
+        const words = faker.random.words(3)
+        return words.replace(/ /g, '-')
+    }
+    let room = createRoom()
+    while (rooms.includes(room)) {
+        room = createRoom()
+    }
+    rooms.push(room)
+    res.json({ room })
+})
 
 httpServer.listen(port, () => console.log(`Server is listening on port ${port}`));
