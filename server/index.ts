@@ -13,7 +13,16 @@ const io = new Server(httpServer, {
   }
 });
 
-io.on("connection", (socket) => {
+const rooms: string[] = []
+
+const roomIo = io.of("/api/room")
+roomIo.on("connection", (socket) => {
+    // validate room id on joining
+    socket.on('join-room', (roomId) => {
+        if (roomId in rooms) {
+            //Add username to room
+        }
+    })
   console.log(socket.id)
   socket.on('update-state', (state) => {
     socket.broadcast.emit("update-state", state)
