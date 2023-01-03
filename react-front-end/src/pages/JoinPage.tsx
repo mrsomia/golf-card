@@ -10,6 +10,11 @@ function JoinRoomPage() {
     const [ roomID, setRoomID ] = useState(roomId ?? "")
     const [ userName, setUserName ] = useState("")
 
+  useEffect(() => {
+    const localUName = localStorage.getItem("username")
+    if (localUName) setUserName(localUName)
+  }, [])
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     // Save the username locally
     e.preventDefault()
