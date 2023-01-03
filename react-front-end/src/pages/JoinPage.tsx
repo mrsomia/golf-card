@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 
 
@@ -19,6 +19,7 @@ function JoinRoomPage() {
     // Save the username locally
     e.preventDefault()
     if (!userName) {
+      // Do Something with the UI
       console.error("No username present")
       return
     }
@@ -35,6 +36,7 @@ function JoinRoomPage() {
           })
         })
         const res = await r.json()
+        navigate(`/room/${res.room}`)
 
         console.log(res)
         // TODO: Validate here with zod
@@ -42,6 +44,8 @@ function JoinRoomPage() {
         // TODO: Handles errors
         console.error(e)
       }
+    } else {
+      navigate(`/room/${roomID}`)
     }
   }
 
