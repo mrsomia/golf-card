@@ -2,10 +2,16 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { faker } from '@faker-js/faker'
+import cors from "cors";
 
 const port = process.env.PORT || 8080
 
 const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173"
+}))
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
