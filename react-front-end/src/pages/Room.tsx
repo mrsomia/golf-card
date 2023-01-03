@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import Button from "../components/Button"
 
 
@@ -9,6 +9,17 @@ function Room() {
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
     const [lastPong, setLastPong] = useState<null | string>(null);
+    const [username, setUsername] = useState("");
+    const navigate = useNavigate()
+
+    useEffect(() => {
+      const localUName = localStorage.getItem("username")
+      if (localUName) {
+        setUsername(localUName)
+      } else {
+        navigate(`/join-room/${roomId}`)  
+      }
+    })
 
     // Sets up the socket
     useEffect(() => {
