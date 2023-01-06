@@ -9,3 +9,27 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id  Int @id @default(autoincrement())
+  name String
+  lastAccessed DateTime @default(now())
+  usersInRooms UsersInRooms[]
+}
+
+model Room {
+  id  Int @id @default(autoincrement())
+  lastAccessed DateTime @default(now())
+  usersInRooms UsersInRooms[]
+}
+
+model UsersInRooms {
+  user User @relation(fields: [userId], references: [id])
+  userId Int  
+  room Room @relation(fields: [roomId], references: [id])
+  roomId Int
+
+  joinedAt DateTime @default(now())
+  @@id([roomId, userId])
+} 
+
