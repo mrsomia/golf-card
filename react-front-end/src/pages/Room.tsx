@@ -37,6 +37,8 @@ function Room() {
             setLastPong(new Date().toISOString());
         });
 
+        socket.emit('join-room', { roomId, username })
+
         return () => {
             socket.off('connect');
             socket.off('disconnect');
@@ -53,6 +55,14 @@ function Room() {
             socket.emit('ping');
         }
     }
+
+    const updateScore = () => {
+    if (!socket) {
+      console.error("Socket is not establised")
+    } else {
+      socket.emit('update-score', )
+    }
+  }
 
     return <div
         className='flex flex-col justify-center items-center w-screen min-h-screen
