@@ -11,25 +11,32 @@ datasource db {
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  name String
+  id           Int      @id @default(autoincrement())
+  name         String
   lastAccessed DateTime @default(now())
-  usersInRooms UsersInRooms[]
+  room         Room     @relation(fields: [roomId], references: [id])
+  roomId       Int
 }
 
 model Room {
-  id  Int @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
+  name         String
   lastAccessed DateTime @default(now())
-  usersInRooms UsersInRooms[]
+  users        User[]
+  holes        Hole[]
 }
 
-model UsersInRooms {
-  user User @relation(fields: [userId], references: [id])
-  userId Int  
-  room Room @relation(fields: [roomId], references: [id])
-  roomId Int
+model Hole {
+  id         Int         @id @default(autoincrement())
+  par        Int         @default(3)
+  room       Room        @relation(fields: [roomId], references: [id])
+  roomId     Int
+  userScores UserScore[]
+}
 
-  joinedAt DateTime @default(now())
-  @@id([roomId, userId])
-} 
-
+model UserScore {
+  id     Int  @id @default(autoincrement())
+  hole   Hole @relation(fields: [holeId], references: [id])
+  holeId Int
+  score  Int  @default(0)
+}
