@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String   @unique
   lastAccessed DateTime @default(now())
   room         Room     @relation(fields: [roomId], references: [id])
   roomId       Int
@@ -27,16 +27,18 @@ model Room {
 }
 
 model Hole {
-  id         Int         @id @default(autoincrement())
-  par        Int         @default(3)
-  room       Room        @relation(fields: [roomId], references: [id])
-  roomId     Int
-  userScores UserScore[]
+  id           Int         @id @default(autoincrement())
+  par          Int         @default(3)
+  room         Room        @relation(fields: [roomId], references: [id])
+  roomId       Int
+  userScores   UserScore[]
+  lastAccessed DateTime    @default(now())
 }
 
 model UserScore {
-  id     Int  @id @default(autoincrement())
-  hole   Hole @relation(fields: [holeId], references: [id])
-  holeId Int
-  score  Int  @default(0)
+  id           Int      @id @default(autoincrement())
+  hole         Hole     @relation(fields: [holeId], references: [id])
+  holeId       Int
+  score        Int      @default(0)
+  lastAccessed DateTime @default(now())
 }
