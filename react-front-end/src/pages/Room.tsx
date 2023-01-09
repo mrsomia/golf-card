@@ -64,15 +64,17 @@ function Room() {
     }
   }
 
-    return <div
-        className='flex flex-col justify-center items-center w-screen min-h-screen
-        bg-gray-800 text-stone-300 gap-8'
-    >
-        <h1 className='text-5xl font-bold pa8 my-8'>Room {`${roomId}`}</h1>
-        <span className="text-lg font-medium m-4">Connected: { '' + isConnected }</span>
-        <span className="text-lg font-medium m-4">Last pong: { lastPong || "-" }</span>
-        <Button onClick={ sendPing } text="Send Ping" />
-    </div>
+    return <>
+        <div
+          className='flex flex-col justify-center items-center w-screen min-h-screen
+          bg-gray-800 text-stone-300 gap-8'
+        >
+          <h1 className='text-5xl font-bold pa8 my-8'>Room {`${roomId}`}</h1>
+          <span className="text-lg font-medium m-4">Connected: { '' + isConnected }</span>
+          <span className="text-lg font-medium m-4">Last pong: { lastPong || "-" }</span>
+          <Button onClick={ sendPing } text="Send Ping" />
+        </div>
+      </>
 }
 
 export default Room
