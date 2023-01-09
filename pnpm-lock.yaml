@@ -46,7 +46,7 @@ importers:
       express: ^4.18.2
       morgan: ^1.10.0
       nodemon: ^2.0.20
-      prisma: ^4.6.1
+      prisma: ^4.8.1
       socket.io: ^4.5.3
       ts-node: ^10.9.1
       tsx: ^3.11.0
@@ -56,13 +56,13 @@ importers:
       cors: 2.8.5
       express: 4.18.2
       morgan: 1.10.0
+      prisma: 4.8.1
       socket.io: 4.5.3
     devDependencies:
       '@types/cors': 2.8.13
       '@types/express': 4.17.14
       '@types/node': 18.11.9
       nodemon: 2.0.20
-      prisma: 4.6.1
       ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
       tsx: 3.11.0
       typescript: 4.9.3
@@ -453,10 +453,10 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@prisma/engines/4.6.1:
-    resolution: {integrity: sha512-3u2/XxvxB+Q7cMXHnKU0CpBiUK1QWqpgiBv28YDo1zOIJE3FCF8DI2vrp6vuwjGt5h0JGXDSvmSf4D4maVjJdw==}
+  /@prisma/engines/4.8.1:
+    resolution: {integrity: sha512-93tctjNXcIS+i/e552IO6tqw17sX8liivv8WX9lDMCpEEe3ci+nT9F+1oHtAafqruXLepKF80i/D20Mm+ESlOw==}
     requiresBuild: true
-    dev: true
+    dev: false
 
   /@remix-run/router/1.0.3:
     resolution: {integrity: sha512-ceuyTSs7PZ/tQqi19YZNBc5X7kj1f8p+4DIyrcIYFY9h+hd1OKm4RqtiWldR9eGEvIiJfsqwM4BsuCtRIuEw6Q==}
@@ -1717,14 +1717,14 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /prisma/4.6.1:
-    resolution: {integrity: sha512-BR4itMCuzrDV4tn3e2TF+nh1zIX/RVU0isKtKoN28ADeoJ9nYaMhiuRRkFd2TZN8+l/XfYzoRKyHzUFXLQhmBQ==}
+  /prisma/4.8.1:
+    resolution: {integrity: sha512-ZMLnSjwulIeYfaU1O6/LF6PEJzxN5par5weykxMykS9Z6ara/j76JH3Yo2AH3bgJbPN4Z6NeCK9s5fDkzf33cg==}
     engines: {node: '>=14.17'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      '@prisma/engines': 4.6.1
-    dev: true
+      '@prisma/engines': 4.8.1
+    dev: false
 
   /proxy-addr/2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
