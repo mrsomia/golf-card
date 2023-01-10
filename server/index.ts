@@ -28,10 +28,15 @@ roomIo.on("connect", (socket) => {
         console.log(`Received ping from ${socket.id}`)
         socket.emit("pong")
     })
-    socket.on('join-room', (roomId) => {
-        if (roomId in rooms) {
-            //Add username to room
-        }
+    socket.on('join-room', async ({ roomId, username }) => {
+      if (!rooms.includes(roomId)) rooms.push(roomId)
+      await socket.join(roomId)
+      // TODO: Add username to room in DB
+      // This should include the username, socket.id and the timestamp
+      // Add user to the room here
+    //
+      socket.emit("Joined roomId")
+      console.log(`${socket.id} join room: ${roomId}`)
     })
     console.log(socket.id)
     socket.on('update-state', (state) => {
