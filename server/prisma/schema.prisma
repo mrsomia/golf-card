@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id           Int      @id @default(autoincrement())
-  name         String   @unique
+  name         String
   lastAccessed DateTime @default(now())
   room         Room     @relation(fields: [roomId], references: [id])
   roomId       Int
@@ -20,7 +20,7 @@ model User {
 
 model Room {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String   @unique
   lastAccessed DateTime @default(now())
   users        User[]
   holes        Hole[]
