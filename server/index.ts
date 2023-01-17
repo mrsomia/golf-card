@@ -61,16 +61,23 @@ roomIo.on("connect", (socket) => {
         socket.emit("pong")
     })
     socket.on('join-room', async ({ roomId, username }) => {
-      if (!(await isRoomInDB(roomId))) await addRoomToDB(roomId)
-      await prisma.room.update({
+      const promises = []
+      if (!(await isRoomInDB(roomId))) promises.push(addRoomToDB(roomId))
+      promises.push(prisma.room.update({
         where: {
-          id: roomId
+          name: roomId
         },
         data: {
-          lastAccessed: new Date()
+          lastAccessed: new Date(),
+          users: {
+            create: {
+              name: username
+            }
+          }
         }
-      })
-      await socket.join(roomId)
+      }))
+      promises.push(socket.join(roomId))
+      await Promise.allSettled(promises)
       // TODO: Add username to room in DB
       // This should include the username, socket.id and the timestamp
       // Add user to the room here
