@@ -11,11 +11,12 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   name         String
-  lastAccessed DateTime @default(now())
-  room         Room     @relation(fields: [roomId], references: [id])
+  lastAccessed DateTime    @default(now())
+  room         Room        @relation(fields: [roomId], references: [id])
   roomId       Int
+  userScores   UserScore[]
 }
 
 model Room {
@@ -40,5 +41,7 @@ model UserScore {
   hole         Hole     @relation(fields: [holeId], references: [id])
   holeId       Int
   score        Int      @default(0)
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
   lastAccessed DateTime @default(now())
 }
