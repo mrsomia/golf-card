@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker'
 import cors from "cors";
 import { scheduleJob } from 'node-schedule';
 import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient()
 
@@ -38,6 +39,22 @@ async function addRoomToDB(roomName: string) {
   })
 }
 
+async function addUserToRoom(userName: string, roomName: string) {
+  await prisma.room.update({
+    where: {
+      name: roomName
+    },
+    data: {
+      lastAccessed: new Date(),
+      users: {
+        create: {
+          name: userName
+        }
+      }
+    }, 
+  })
+}
+
 const port = process.env.PORT || 8080
 
 const app = express();
@@ -62,28 +79,25 @@ roomIo.on("connect", (socket) => {
     })
     socket.on('join-room', async ({ roomId, username }) => {
       const promises = []
-      if (!(await isRoomInDB(roomId))) promises.push(addRoomToDB(roomId))
-      promises.push(prisma.room.update({
-        where: {
-          name: roomId
-        },
-        data: {
-          lastAccessed: new Date(),
-          users: {
-            create: {
-              name: username
-            }
-          }
-        }
-      }))
-      promises.push(socket.join(roomId))
-      await Promise.allSettled(promises)
-      // TODO: Add username to room in DB
-      // This should include the username, socket.id and the timestamp
-      // Add user to the room here
-    //
-      socket.emit("Joined room", roomId)
-      console.log(`${socket.id} join room: ${roomId}`)
+
+      const roomZod = z.string().safeParse(roomId)
+      const usernameZod = z.string().safeParse(username)
+
+      if (roomZod.success && usernameZod.success) {
+        if (!(await isRoomInDB(roomZod.data))) promises.push(addRoomToDB(roomZod.data))
+        promises.push(addUserToRoom(usernameZod.data, roomZod.data))
+        promises.push(socket.join(roomZod.data))
+        await Promise.allSettled(promises)
+        socket.emit("Joined room", roomId)
+        console.log(`${socket.id} join room: ${roomId}`)
+      } else if (!roomZod.success){
+        console.error(roomZod.error)
+        io.in(socket.id).emit('valueError', 'roomId provided must be a string')
+      } else if (!usernameZod.success) {
+        console.error(usernameZod.error)
+        io.in(socket.id).emit('valueError', 'username must be a string')
+      }
+ 
     })
     console.log(socket.id)
     socket.on('update-state', (state) => {
