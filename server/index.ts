@@ -19,6 +19,13 @@ scheduleJob('0 * * * *', async function() {
       }
     }
   })
+  await prisma.user.deleteMany({
+    where: {
+      lastAccessed : {
+        lte: d
+      }
+    }
+  })
 })
 
 async function isRoomInDB(roomName: string) {
@@ -40,6 +47,7 @@ async function addRoomToDB(roomName: string) {
 }
 
 async function addUserToRoom(userName: string, roomName: string) {
+  // may want to validate if a user exists here
   await prisma.room.update({
     where: {
       name: roomName
@@ -84,10 +92,13 @@ roomIo.on("connect", (socket) => {
       const usernameZod = z.string().safeParse(username)
 
       if (roomZod.success && usernameZod.success) {
+        // Creates a user and adds them to a room
+
         if (!(await isRoomInDB(roomZod.data))) promises.push(addRoomToDB(roomZod.data))
         promises.push(addUserToRoom(usernameZod.data, roomZod.data))
         promises.push(socket.join(roomZod.data))
         await Promise.allSettled(promises)
+
         socket.emit("Joined room", roomId)
         console.log(`${socket.id} join room: ${roomId}`)
       } else if (!roomZod.success){

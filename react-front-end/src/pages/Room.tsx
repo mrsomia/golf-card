@@ -23,6 +23,7 @@ function Room() {
 
     // Sets up the socket
     useEffect(() => {
+        if (!username) return
         const socket = io(`${import.meta.env.VITE_SERVER_URL}/api/room`)
         setSocket(socket)
         socket.on('connect', () => {
@@ -45,7 +46,7 @@ function Room() {
             socket.off('pong');
             socket.close()
         }
-    }, [])
+    }, [username])
 
     const sendPing = () => {
         if (!socket) {
@@ -69,7 +70,7 @@ function Room() {
           className='flex flex-col justify-center items-center w-screen min-h-screen
           bg-gray-800 text-stone-300 gap-8'
         >
-          <h1 className='text-5xl font-bold pa8 my-8'>Room {`${roomId}`}</h1>
+          <h1 className='text-xl md:text-4xl font-extrabold md:font-bold pa8 my-8 text-center'>Room: {`${roomId}`}</h1>
           <span className="text-lg font-medium m-4">Connected: { '' + isConnected }</span>
           <span className="text-lg font-medium m-4">Last pong: { lastPong || "-" }</span>
           <Button onClick={ sendPing } text="Send Ping" />
