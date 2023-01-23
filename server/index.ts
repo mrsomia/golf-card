@@ -85,10 +85,11 @@ roomIo.on("connect", (socket) => {
         console.log(`Received ping from ${socket.id}`)
         socket.emit("pong")
     })
-    socket.on('join-room', async ({ roomId, username }) => {
+    socket.on('join-room', async ({ roomName, username }) => {
+      // TODO: Add error handling, e.g. if username already exist?
       const promises = []
 
-      const roomZod = z.string().safeParse(roomId)
+      const roomZod = z.string().safeParse(roomName)
       const usernameZod = z.string().safeParse(username)
 
       if (roomZod.success && usernameZod.success) {
@@ -99,8 +100,8 @@ roomIo.on("connect", (socket) => {
         promises.push(socket.join(roomZod.data))
         await Promise.allSettled(promises)
 
-        socket.emit("Joined room", roomId)
-        console.log(`${socket.id} join room: ${roomId}`)
+        socket.emit("Joined room", roomName)
+        console.log(`${socket.id} join room: ${roomName}`)
       } else if (!roomZod.success){
         console.error(roomZod.error)
         io.in(socket.id).emit('valueError', 'roomId provided must be a string')
