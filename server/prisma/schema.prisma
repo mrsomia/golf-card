@@ -14,7 +14,7 @@ model User {
   id           Int         @id @default(autoincrement())
   name         String
   lastAccessed DateTime    @default(now())
-  room         Room        @relation(fields: [roomId], references: [id])
+  room         Room?       @relation(fields: [roomId], references: [id])
   roomId       Int
   userScores   UserScore[]
 }

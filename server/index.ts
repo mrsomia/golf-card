@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { faker } from '@faker-js/faker'
 import cors from "cors";
 import { scheduleJob } from 'node-schedule';
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { z } from "zod";
 
 const prisma = new PrismaClient()
@@ -46,21 +46,23 @@ async function addRoomToDB(roomName: string) {
   })
 }
 
-async function addUserToRoom(userName: string, roomName: string) {
+async function addUserToRoom(userName: string | User, roomName: string) {
   // may want to validate if a user exists here
-  await prisma.room.update({
-    where: {
-      name: roomName
-    },
-    data: {
-      lastAccessed: new Date(),
-      users: {
-        create: {
-          name: userName
+  if (typeof userName === 'string') {
+    await prisma.room.update({
+      where: {
+        name: roomName
+      },
+      data: {
+        lastAccessed: new Date(),
+        users: {
+          create: {
+            name: userName
+          }
         }
-      }
-    }, 
-  })
+      }, 
+    })
+  }
 }
 
 const port = process.env.PORT || 8080
@@ -85,30 +87,35 @@ roomIo.on("connect", (socket) => {
         console.log(`Received ping from ${socket.id}`)
         socket.emit("pong")
     })
-    socket.on('join-room', async ({ roomName, username }) => {
+    socket.on('join-room', async ({ roomName, username}, onError ) => {
       // TODO: Add error handling, e.g. if username already exist?
       const promises = []
 
-      const roomZod = z.string().safeParse(roomName)
-      const usernameZod = z.string().safeParse(username)
+      let validatedRoom: string
+      let validatedUserName: string
 
-      if (roomZod.success && usernameZod.success) {
-        // Creates a user and adds them to a room
-
-        if (!(await isRoomInDB(roomZod.data))) promises.push(addRoomToDB(roomZod.data))
-        promises.push(addUserToRoom(usernameZod.data, roomZod.data))
-        promises.push(socket.join(roomZod.data))
-        await Promise.allSettled(promises)
-
-        socket.emit("Joined room", roomName)
-        console.log(`${socket.id} join room: ${roomName}`)
-      } else if (!roomZod.success){
-        console.error(roomZod.error)
-        io.in(socket.id).emit('valueError', 'roomId provided must be a string')
-      } else if (!usernameZod.success) {
-        console.error(usernameZod.error)
-        io.in(socket.id).emit('valueError', 'username must be a string')
+      try {
+        validatedRoom = z.string().parse(roomName)
+        validatedUserName = z.string().parse(username)
+      } catch (err) {
+        onError(JSON.stringify(err, Object.getOwnPropertyNames(err)))
+        return
       }
+
+      // Creates a user and adds them to a room
+      const user = await prisma.user.findFirst({
+        where: {
+          name: validatedUserName
+        }
+      })
+
+      if (!(await isRoomInDB(validatedRoom))) promises.push(addRoomToDB(validatedRoom))
+      promises.push(addUserToRoom(user ?? validatedUserName, validatedRoom))
+      promises.push(socket.join(validatedRoom))
+      await Promise.allSettled(promises)
+
+      socket.emit("Joined room", roomName)
+      console.log(`${socket.id} join room: ${roomName}`)
  
     })
     console.log(socket.id)

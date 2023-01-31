@@ -38,7 +38,7 @@ function Room() {
             setLastPong(new Date().toISOString());
         });
 
-        socket.emit('join-room', { roomName, username }, ({ 
+        socket.emit('join-room', { roomName, username }, ({
           userId, 
           roomId, 
           userLastAccessed, 
