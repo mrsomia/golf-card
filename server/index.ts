@@ -95,7 +95,7 @@ roomIo.on("connect", (socket) => {
       let validatedUserName: string
 
       try {
-        validatedRoom = z.string().parse(roomName)
+        validatedRoom = z.string().parse(roomName.toLowerCase())
         validatedUserName = z.string().parse(username)
       } catch (err) {
         onError(JSON.stringify(err, Object.getOwnPropertyNames(err)))
@@ -128,7 +128,7 @@ app.get('/', (_req, res) => res.json({ message: "hello world" }))
 app.post('/create-room', async (_req, res) => {
     function createRoom() {
         const words = faker.random.words(3)
-        return words.replace(/ /g, '-')
+        return words.toLowerCase().replace(/ /g, '-')
     }
     let room = createRoom()
     while (await isRoomInDB(room)) {
