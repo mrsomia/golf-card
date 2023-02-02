@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import Button from "../components/Button"
+import { z } from 'zod'
 
 
 function Room() {
@@ -84,7 +84,18 @@ function Room() {
     }
   }
 
-  const placeholderScores = {
+  const scoreSchema = z.object({
+    holes: z.array(z.object({
+      number: z.number(),
+      par: z.number(),
+    })),
+    players: z.array(z.object({
+      name: z.string(),
+      scores: z.array(z.number()),
+    }))
+  })
+
+  const placeholderScores: z.infer<typeof scoreSchema> = {
     holes: [
       {
         number: 1,
@@ -125,44 +136,53 @@ function Room() {
 
   return <>
     <div
-      className='flex flex-col justify-center items-center w-screen min-h-screen
+      className='flex flex-col md:justify-center items-center w-screen min-h-screen
       bg-gray-800 text-stone-300 gap-8'
     >
-      <h1 className='text-2xl md:text-3xl font-extrabold md:font-bold pa8 my-8 text-center'>Room: {`${roomName}`}</h1>
+      <h1 
+        className='text-4xl md:text-3xl font-extrabold md:font-bold m-8 text-center'
+      >
+        {`${roomName && roomName.replace(/-/g, " ")}`}
+      </h1>
 
-      <div className="relative overflow-x-scroll">
-        <table className="text-center">
-          <thead>
-            <tr className="text-lg">
-              <th className="p-2">Hole</th>
-              {placeholderScores.holes.map(hole => (
-                <th className="p-1 px-2">{hole.number}</th>
+      <div className="">
+        <table className="text-center table-auto">
+          <thead className="">
+            <tr className="text-xl">
+              <th className="p-2">Holes</th>
+              {placeholderScores.players.map(player => (
+                <th className="p-2">{player.name}</th>
               ))}
-              <th className="p-2">Total</th>
             </tr>
           </thead>
 
           <tbody>
-            {placeholderScores.players.map(player => (
-              <tr className="text-lg">
-                <td>{player.name}</td>
-                {player.scores.map(score => (
-                  <td>{score}</td>
+            {placeholderScores.holes.map((hole, i) => (
+              <tr className="text-lg py-2">
+                <td>{hole.number}</td>
+                {placeholderScores.players.map((player) => (
+                  <td>{player.scores[i]}</td>
                 ))}
-                <td>
-                  {player.scores
-                  .filter(num => num != null)
-                  .reduce((p,v) =>  p + v, 0)}
-                </td>
               </tr>
             ))}
           </tbody>
+
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              {placeholderScores.players.map(player => (
+                <td>{player.scores.reduce((p,v) => p + v, 0)}</td>
+              ))}
+            </tr>
+          </tfoot>
         </table>
       </div>
 
-      <span className="text-lg font-medium m-4">Connected: { '' + isConnected }</span>
-      <span className="text-lg font-medium m-4">Last pong: { lastPong || "-" }</span>
-      <Button onClick={ sendPing } text="Send Ping" />
+      <span
+        className={`text-lg font-medium m-4 ${!isConnected ? "text-orange-600" : ""}`}
+      >
+        Connected: { '' + isConnected }
+      </span>
     </div>
     </>
 }
