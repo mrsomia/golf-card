@@ -9,19 +9,21 @@ import { z } from "zod";
 
 const prisma = new PrismaClient()
 
-scheduleJob('0 * * * *', async function() {
+scheduleJob('* * * * *', async function() {
+  console.log("Deleting old users")
   // now - (ms * s * mins * hours)
   let d = new Date(Date.now() - 1000 * 60 * 60 * 16)
-  await prisma.room.deleteMany({
+  await prisma.user.deleteMany({
     where: {
-      lastAccessed: {
+      lastAccessed : {
         lte: d
       }
     }
   })
-  await prisma.user.deleteMany({
+  console.log("Deleting old rooms")
+  await prisma.room.deleteMany({
     where: {
-      lastAccessed : {
+      lastAccessed: {
         lte: d
       }
     }
