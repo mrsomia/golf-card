@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const prisma = new PrismaClient()
 
-scheduleJob('* * * * *', async function() {
+scheduleJob('*/15 * * * *', async function() {
   console.log("Deleting old users")
   // now - (ms * s * mins * hours)
   let d = new Date(Date.now() - 1000 * 60 * 60 * 16)
