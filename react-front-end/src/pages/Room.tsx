@@ -134,6 +134,12 @@ function Room() {
     ],
   }
 
+  const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    console.log(`value: ${e.target.value}, hole: ${i}`)
+    // TODO: This state needs to be moved to a reducer
+    placeholderScores.players[0].scores[i] = Number(e.target.value)
+  }
+
   return <>
     <div
       className='flex flex-col md:justify-center items-center w-screen min-h-screen
@@ -160,8 +166,15 @@ function Room() {
             {placeholderScores.holes.map((hole, i) => (
               <tr className="text-lg py-2">
                 <td>{hole.number}</td>
-                {placeholderScores.players.map((player) => (
-                  <td>{player.scores[i]}</td>
+                {placeholderScores.players.map((player, j) => (
+                  <td>
+                    <input
+                      className="bg-gray-800 w-8 text-center"
+                      onChange={(e) => handleHoleChange(e, i)}
+                      value={player.scores[i]}
+                      disabled={j !== 0}
+                    />
+                  </td>
                 ))}
               </tr>
             ))}
