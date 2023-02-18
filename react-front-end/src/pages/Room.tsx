@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useReducer } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import { z } from 'zod'
+import { initialState, placeholderScores, roomReducer } from "../utils/room-reducer"
 
 
 function Room() {
@@ -11,6 +11,8 @@ function Room() {
     const [lastPong, setLastPong] = useState<null | string>(null);
     const [username, setUsername] = useState("");
     const navigate = useNavigate()
+
+    const [state, dispath] = useReducer(roomReducer, placeholderScores)
 
     useEffect(() => {
       const localUName = localStorage.getItem("username")
@@ -84,60 +86,15 @@ function Room() {
     }
   }
 
-  const scoreSchema = z.object({
-    holes: z.array(z.object({
-      number: z.number(),
-      par: z.number(),
-    })),
-    players: z.array(z.object({
-      name: z.string(),
-      scores: z.array(z.number()),
-    }))
-  })
-
-  const placeholderScores: z.infer<typeof scoreSchema> = {
-    holes: [
-      {
-        number: 1,
-        par: 2
-      },
-      {
-        number: 2,
-        par: 5
-      },
-      {
-        number: 3,
-        par: 3
-      },
-      {
-        number: 4,
-        par: 6
-      },
-      {
-        number: 5,
-        par: 9
-      },
-      {
-        number: 6,
-        par: 8
-      },
-    ],
-    players: [
-      {
-        name: 'John',
-        scores: [ 3, 5, 3, 7, 8, 7]
-      },
-      {
-        name: 'Sam',
-        scores: [ 4, 4, 5, 6, 9, 8]
-      },
-    ],
-  }
-
-  const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
-    console.log(`value: ${e.target.value}, hole: ${i}`)
+  const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, holeNumber: number) => {
+    console.log(`value: ${e.target.value}, hole: ${holeNumber}`)
     // TODO: This state needs to be moved to a reducer
-    placeholderScores.players[0].scores[i] = Number(e.target.value)
+    if (state === null) {
+      console.error("state is currently null while changing score")
+      return
+    }
+    const stateClone = { ...state }
+    stateClone.players[0].scores[holeNumber] = Number(e.target.value)
   }
 
   return <>
@@ -156,23 +113,24 @@ function Room() {
           <thead className="">
             <tr className="text-xl">
               <th className="p-2">Holes</th>
-              {placeholderScores.players.map(player => (
+              {state && state.players.map(player => (
                 <th className="p-2">{player.name}</th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {placeholderScores.holes.map((hole, i) => (
+            {state && state.holes.map((hole, i) => (
               <tr className="text-lg py-2">
                 <td>{hole.number}</td>
-                {placeholderScores.players.map((player, j) => (
+                {state.players.map((player, j) => (
                   <td>
                     <input
-                      className="bg-gray-800 w-8 text-center"
+                      className="bg-gray-800 w-16 text-center"
                       onChange={(e) => handleHoleChange(e, i)}
                       value={player.scores[i]}
                       disabled={j !== 0}
+                      type="number"
                     />
                   </td>
                 ))}
@@ -183,7 +141,7 @@ function Room() {
           <tfoot>
             <tr>
               <td>Total</td>
-              {placeholderScores.players.map(player => (
+              {state && state.players.map(player => (
                 <td>{player.scores.reduce((p,v) => p + v, 0)}</td>
               ))}
             </tr>
