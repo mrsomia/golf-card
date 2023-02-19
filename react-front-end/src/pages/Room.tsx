@@ -12,7 +12,7 @@ function Room() {
     const [username, setUsername] = useState("");
     const navigate = useNavigate()
 
-    const [state, dispath] = useReducer(roomReducer, placeholderScores)
+    const [state, dispatch] = useReducer(roomReducer, placeholderScores)
 
     useEffect(() => {
       const localUName = localStorage.getItem("username")
@@ -88,14 +88,21 @@ function Room() {
 
   const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, holeNumber: number) => {
     console.log(`value: ${e.target.value}, hole: ${holeNumber}`)
-    // TODO: This state needs to be moved to a reducer
     if (state === null) {
       console.error("state is currently null while changing score")
       return
     }
-    const stateClone = { ...state }
-    stateClone.players[0].scores[holeNumber] = Number(e.target.value)
+    dispatch({
+      type: "UPDATE-PLAYER-SCORE",
+      payload: {
+        username,
+        hole: holeNumber,
+        value: Number(e.target.value)
+      }
+    })
   }
+  
+  console.log(`username: ${username}`)
 
   return <>
     <div

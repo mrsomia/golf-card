@@ -19,12 +19,25 @@ export function roomReducer(state: InitialState, action: ACTIONTYPE) {
   switch (action.type) {
     case 'UPDATE-SCORES-SERVER':
       return action.payload
+    case 'UPDATE-PLAYER-SCORE':
+      const copy = { ...state }
+      if (!copy.players) {
+        console.error("no players found in state")
+        return state
+      }
+      // if (copy.players[0].name !== action.payload.username) {
+      //   console.error("username is not the first user")
+      //   return state
+      // }
+      copy.players[0].scores[action.payload.hole] = action.payload.value
+      return copy
     default:
       return state
   }
 }
 
 export type ACTIONTYPE = | { type: 'UPDATE-SCORES-SERVER', payload: z.infer<typeof scoreSchema> }
+          | { type: "UPDATE-PLAYER-SCORE", payload: { username: string; hole: number; value: number } }
 
 export const placeholderScores: z.infer<typeof scoreSchema> = {
   holes: [
