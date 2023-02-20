@@ -9,6 +9,8 @@ function Room() {
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
     const [username, setUsername] = useState("");
+    const [creatingHole, setCreatingHole] = useState(false)
+    const [newPar, setNewPar] = useState(0)
     const navigate = useNavigate()
 
     const [state, dispatch] = useReducer(roomReducer, initialState)
@@ -129,6 +131,25 @@ function Room() {
                 ))}
               </tr>
             ))}
+            {creatingHole && state ? (
+              <tr>
+                <td>{(state?.holes.at(-1)?.number ?? 0) + 1}</td>
+                <td>
+                  <input 
+                      className="bg-gray-800 w-16 text-center"
+                      onChange={(e) => setNewPar(Number(e.target.value))}
+                      value={newPar || ""}
+                      type="number"
+                      />
+                </td>
+              </tr>
+            ) : (
+            <tr>
+              <td colSpan={100} className="text-center">
+                <button onClick={() => setCreatingHole(true)}>+ New Hole</button>
+              </td>
+            </tr>
+            )}
           </tbody>
 
           <tfoot>
