@@ -8,7 +8,6 @@ function Room() {
     const { roomId: roomName } = useParams()
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
-    const [lastPong, setLastPong] = useState<null | string>(null);
     const [username, setUsername] = useState("");
     const navigate = useNavigate()
 
@@ -34,10 +33,6 @@ function Room() {
 
         socket.on('disconnect', () => {
             setIsConnected(false);
-        });
-
-        socket.on('pong', () => {
-            setLastPong(new Date().toISOString());
         });
 
         socket.emit('join-room', { roomName, username }, ({
@@ -68,15 +63,6 @@ function Room() {
             socket.close()
         }
     }, [username])
-
-    const sendPing = () => {
-        if (!socket) {
-            console.error("Socket is not establised")
-        } else {
-            console.log("Sending ping")
-            socket.emit('ping');
-        }
-    }
 
     const updateScore = () => {
     if (!socket) {
