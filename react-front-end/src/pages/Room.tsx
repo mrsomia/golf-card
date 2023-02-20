@@ -1,7 +1,7 @@
 import { useEffect, useState, useReducer } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import { initialState, placeholderScores, roomReducer } from "../utils/room-reducer"
+import { initialState, roomReducer } from "../utils/room-reducer"
 
 
 function Room() {
@@ -12,7 +12,7 @@ function Room() {
     const [username, setUsername] = useState("");
     const navigate = useNavigate()
 
-    const [state, dispatch] = useReducer(roomReducer, placeholderScores)
+    const [state, dispatch] = useReducer(roomReducer, initialState)
 
     useEffect(() => {
       const localUName = localStorage.getItem("username")
@@ -135,7 +135,7 @@ function Room() {
                     <input
                       className="bg-gray-800 w-16 text-center"
                       onChange={(e) => handleHoleChange(e, i)}
-                      value={player.scores[i]}
+                      value={player.scores[i] || ""}
                       disabled={j !== 0}
                       type="number"
                     />

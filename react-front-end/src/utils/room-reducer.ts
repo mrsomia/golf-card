@@ -1,3 +1,4 @@
+import { Reducer } from 'react'
 import { z } from 'zod'
 
 export const scoreSchema = z.object({
@@ -11,33 +12,7 @@ export const scoreSchema = z.object({
   }))
 })
 
-export type InitialState = null | z.infer<typeof scoreSchema>
-
-export const initialState: InitialState = null
-
-export function roomReducer(state: InitialState, action: ACTIONTYPE) {
-  switch (action.type) {
-    case 'UPDATE-SCORES-SERVER':
-      return action.payload
-    case 'UPDATE-PLAYER-SCORE':
-      const copy = { ...state }
-      if (!copy.players) {
-        console.error("no players found in state")
-        return state
-      }
-      // if (copy.players[0].name !== action.payload.username) {
-      //   console.error("username is not the first user")
-      //   return state
-      // }
-      copy.players[0].scores[action.payload.hole] = action.payload.value
-      return copy
-    default:
-      return state
-  }
-}
-
-export type ACTIONTYPE = | { type: 'UPDATE-SCORES-SERVER', payload: z.infer<typeof scoreSchema> }
-          | { type: "UPDATE-PLAYER-SCORE", payload: { username: string; hole: number; value: number } }
+export type InitialState = z.infer<typeof scoreSchema> | null
 
 export const placeholderScores: z.infer<typeof scoreSchema> = {
   holes: [
@@ -77,4 +52,31 @@ export const placeholderScores: z.infer<typeof scoreSchema> = {
     },
   ],
 }
+
+export const initialState: InitialState = placeholderScores
+
+export const roomReducer: Reducer<InitialState, ACTIONTYPE> = (state: InitialState, action: ACTIONTYPE) => {
+  switch (action.type) {
+    case 'UPDATE-SCORES-SERVER':
+      return action.payload
+    case 'UPDATE-PLAYER-SCORE':
+      if (state === null) {
+        console.error("State is null")
+        return state
+      }
+      const copy = { ...state }
+      // if (copy.players[0].name !== action.payload.username) {
+      //   console.error("username is not the first user")
+      //   return state
+      // }
+      copy.players[0].scores[action.payload.hole] = action.payload.value ?? 0
+      return copy
+    default:
+      return state
+  }
+}
+
+export type ACTIONTYPE = | { type: 'UPDATE-SCORES-SERVER', payload: z.infer<typeof scoreSchema> }
+          | { type: "UPDATE-PLAYER-SCORE", payload: { username: string; hole: number; value: number } }
+
 
