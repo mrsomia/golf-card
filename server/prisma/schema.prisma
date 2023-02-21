@@ -29,11 +29,14 @@ model Room {
 
 model Hole {
   id           Int         @id @default(autoincrement())
+  number       Int
   par          Int         @default(3)
   room         Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId       Int
   userScores   UserScore[]
   lastAccessed DateTime    @default(now())
+
+  @@unique([roomId, number])
 }
 
 model UserScore {
