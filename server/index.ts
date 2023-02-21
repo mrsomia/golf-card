@@ -67,6 +67,52 @@ async function addUserToRoom(userName: string | User, roomName: string) {
   }
 }
 
+async function getRoomScore(roomName: string) {
+  const roomData = await prisma.room.findUnique({
+    where: {
+      name: roomName
+    },
+    include: {
+      holes: {
+        orderBy: {
+          number: 'asc',
+        }
+      },
+      users: {
+        include: {
+          userScores: true
+        }
+      },
+    },
+  })
+  
+  if (roomData === null) {
+    console.error("Could not fetch room data")
+    return
+  }
+
+  // This Transforms the roomData above into the format for the frontend
+  const players = roomData.users.map(user => {
+    const scores = roomData.holes.map(hole => {
+      const scoreForThisHole = user.userScores.find(userScore => userScore.holeId === hole.id)
+      return scoreForThisHole?.score ?? 0
+    })
+
+   return {
+      name: user.name,
+      id: user.id,
+      scores
+    }
+  })
+
+  const result = {
+    holes: roomData.holes,
+    players,
+  }
+
+  return result
+}
+
 const port = process.env.PORT || 8080
 
 const app = express();
