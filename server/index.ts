@@ -167,6 +167,25 @@ roomIo.on("connect", (socket) => {
  
     })
     console.log(socket.id)
+
+    socket.on('get-room-state', async ({ roomName, username }, returnDataFn)  => {
+
+      let validatedRoom: string
+      let validatedUserName: string
+
+      try {
+        validatedRoom = z.string().parse(roomName).toLowerCase()
+        validatedUserName = z.string().parse(username)
+      } catch (err) {
+        console.error(err)
+        // onError(JSON.stringify(err, Object.getOwnPropertyNames(err)))
+        return
+      }
+      
+      const score = await getRoomScore(validatedRoom)
+      returnDataFn(score)
+    })
+
     socket.on('update-state', (state) => {
         socket.broadcast.emit("update-state", state)
     })
