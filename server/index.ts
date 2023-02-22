@@ -6,6 +6,7 @@ import cors from "cors";
 import { scheduleJob } from 'node-schedule';
 import { PrismaClient, User } from "@prisma/client";
 import { z } from "zod";
+import morgan from 'morgan';
 
 const prisma = new PrismaClient()
 
@@ -121,6 +122,8 @@ app.use(cors({
   origin: "http://localhost:5173"
 }))
 
+app.use(morgan('tiny'))
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -192,17 +195,29 @@ roomIo.on("connect", (socket) => {
 });
 
 app.get('/', (_req, res) => res.json({ message: "hello world" }))
+
 app.post('/create-room', async (_req, res) => {
     function createRoom() {
         const words = faker.random.words(3)
         return words.toLowerCase().replace(/ /g, '-')
     }
     let room = createRoom()
+    // TODO: Wrap promises in try/catch
     while (await isRoomInDB(room)) {
         room = createRoom()
     }
     await addRoomToDB(room)
     res.json({ room })
+})
+
+app.get("/room-score/:roomName", async (req, res) => {
+  try {
+    const validateRoomName = z.string().parse(req.params.roomName)
+    const roomScore = await getRoomScore(validateRoomName)
+    res.json(roomScore)
+  } catch (e) {
+    res.send(e)
+  }
 })
 
 httpServer.listen(port, () => console.log(`Server is listening on port ${port}`));

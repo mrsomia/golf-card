@@ -1,10 +1,14 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from 'react-query'
 
 import HomePage from './pages/HomePage'
 import JoinRoomPage from './pages/JoinPage'
 import Room from './pages/Room';
 
+const queryClient = new QueryClient()
+
 function App() {
+
     const router = createBrowserRouter([
         {
             path: "/",
@@ -32,8 +36,9 @@ function App() {
         }
     ]); 
 
-
-    return <RouterProvider router={router} />
+   return <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+    </QueryClientProvider>
 }
 
 export default App

@@ -3,6 +3,8 @@ import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
 import { initialState, roomReducer } from "../utils/room-reducer"
 
+import { useQuery, useQueryClient } from 'react-query'
+
 
 function Room() {
     const { roomId: roomName } = useParams()
@@ -23,6 +25,20 @@ function Room() {
         navigate(`/join-room/${roomName}`)  
       }
     })
+
+    const queryClient = useQueryClient()
+    const scoreQuery = useQuery({ queryKey: 'score', queryFn: async () => {
+      const r = await fetch(`${import.meta.env.VITE_SERVER_URL}/room-score/${roomName}`, {
+        method: 'GET',
+      }).then(res => res.json())
+      if (!(r.ok || r.status === 304 )) throw new Error("Unable to fetch")
+      return r
+     }
+    })
+
+    if (scoreQuery.isSuccess) {
+      console.log({data : scoreQuery.data } )
+    }
 
     // Sets up the socket
     useEffect(() => {
