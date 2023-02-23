@@ -1,4 +1,4 @@
-import { PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient, User } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
@@ -46,7 +46,7 @@ export async function addRoomToDB(roomName: string) {
 export async function addUserToRoom(userName: string | User, roomName: string) {
   // may want to validate if a user exists here
   if (typeof userName === 'string') {
-    await prisma.room.update({
+    const room = await prisma.room.update({
       where: {
         name: roomName
       },
@@ -58,6 +58,31 @@ export async function addUserToRoom(userName: string | User, roomName: string) {
           }
         }
       }, 
+      include: {
+        holes: true,
+        users : {
+          where: {
+            name: {
+              equals: userName,
+            }
+          }
+        }
+      }
+    })
+
+    let userScores: Prisma.UserScoreCreateManyInput[] = []
+
+    for (const user of room.users) {
+      for (const hole of room.holes) {
+        userScores.push({
+          userId: user.id,
+          holeId: hole.id,
+        })
+      }
+    }
+
+    await prisma.userScore.createMany({
+      data: userScores
     })
   }
 }
