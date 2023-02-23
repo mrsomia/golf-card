@@ -3,40 +3,46 @@ import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
 import { initialState, roomReducer } from "../utils/room-reducer"
 
-import { useQuery, useQueryClient } from 'react-query'
+import { useQuery, useQueryClient, useMutation } from 'react-query'
 
 
 function Room() {
     const { roomId: roomName } = useParams()
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
-    const [username, setUsername] = useState("");
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
     const navigate = useNavigate()
+    const [username] = useState(() => {
+      const localUName = localStorage.getItem("username")
+      if (localUName) {
+        return localUName
+      } else {
+        navigate(`/join-room/${roomName}`)  
+        throw new Error("No username, should not reach this line")
+      }
+    }
+    );
 
     const [state, dispatch] = useReducer(roomReducer, initialState)
 
-    useEffect(() => {
-      const localUName = localStorage.getItem("username")
-      if (localUName) {
-        setUsername(localUName)
-      } else {
-        navigate(`/join-room/${roomName}`)  
-      }
-    })
-
     const queryClient = useQueryClient()
-    const scoreQuery = useQuery({ queryKey: 'score', queryFn: async () => {
+    const scoreQuery = useQuery(['score', username], async () => {
       const r = await fetch(`${import.meta.env.VITE_SERVER_URL}/room-score/${roomName}`, {
-        method: 'GET',
-      }).then(res => res.json())
-      if (!(r.ok || r.status === 304 )) throw new Error("Unable to fetch")
-      return r
-     }
-    })
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body : JSON.stringify({ username }),
+      })
+        .then(res => res.json())
 
-    if (scoreQuery.isSuccess) {
+      if (r.ok || r.status === 304 ) return r
+      throw new Error("Unable to fetch")
+     }
+    )
+
+    if (scoreQuery.data) {
       console.log({data : scoreQuery.data } )
     }
 
@@ -106,8 +112,6 @@ function Room() {
     })
   }
   
-  console.log(`username: ${username}`)
-
   return <>
     <div
       className='flex flex-col md:justify-center items-center w-screen min-h-screen

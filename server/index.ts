@@ -16,9 +16,9 @@ import {
 } from "./db.js";
 
 
-scheduleJob('*/15 * * * *', async function() {
-  deleteStaleDBItems()
-})
+// scheduleJob('*/15 * * * *', async function() {
+//   deleteStaleDBItems()
+// })
 
 const port = process.env.PORT || 8080
 
@@ -29,6 +29,8 @@ app.use(cors({
 }))
 
 app.use(morgan('tiny'))
+
+app.use(express.json())
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -94,13 +96,34 @@ app.post('/create-room', async (_req, res) => {
     res.json({ room })
 })
 
-app.get("/room-score/:roomName", async (req, res) => {
+app.post("/room-score/:roomName", async (req, res) => {
+  let validatedUserName: string
+  console.log(req.body)
+  try {
+    validatedUserName = z.string().parse(req.body.username)
+  } catch (e) {
+    res.status(403).send()
+    return
+  }
   try {
     const validateRoomName = z.string().parse(req.params.roomName)
     const roomScore = await getRoomScore(validateRoomName)
+    console.log("roomScore")
+    console.log(roomScore)
     res.json(roomScore)
   } catch (e) {
     res.send(e)
+    return
+  }
+})
+
+app.post("/update-score", async (req, res) => {
+  const { username, roomName, update } = req.body
+  try {
+    const validatedUserName = z.string().parse(username)
+    const validateRoomName = z.string().parse(roomName)
+  } catch (e) {
+
   }
 })
 
