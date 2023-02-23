@@ -4,6 +4,16 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient()
 
 async function main() {
+	
+	// This will clear the DB first if deletePrevious is true
+	const deletePrevious = false
+	if (deletePrevious) {
+		await prisma.room.deleteMany()
+		await prisma.hole.deleteMany()
+		await prisma.userScore.deleteMany()
+		await prisma.user.deleteMany()
+	}
+
 	const roomWithUsersAndHoles = await prisma.room.create({
 		data: {
 			name: faker.random.words(3).toLowerCase().replace(/ /g, '-'),
