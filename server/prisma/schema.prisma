@@ -47,4 +47,6 @@ model UserScore {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   lastAccessed DateTime @default(now())
+  
+  @@unique([holeId, userId])
 }
