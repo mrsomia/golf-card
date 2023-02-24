@@ -6,7 +6,7 @@ export const scoreSchema = z.object({
     par: z.number(),
     id: z.number(),
     roomId: z.number(),
-    lastAccessed: z.date(),
+    lastAccessed: z.string(),
   })),
   players: z.array(z.object({
     name: z.string(),
@@ -23,7 +23,7 @@ export const scoreSchema = z.object({
   }))
 })
 
-export const scoreQueryFn = async (username: string, roomName: string): Promise<z.infer<typeof scoreSchema>> => {
+export const scoreQueryFn = async (username: string, roomName: string) => {
       try{
         const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/room-score/${roomName}`, {
           method: 'POST',
@@ -35,12 +35,14 @@ export const scoreQueryFn = async (username: string, roomName: string): Promise<
         const r = await res.json()
         console.log({ res, r })
         if (res.ok) {
-          return r
+          const validatedScore = scoreSchema.parse(r)
+          return validatedScore
         } else {
-          throw new Error("Unable to fetch")
+          throw new Error(`Unable ot complete fetch, response status was: ${res.status}`)
         }
       } catch (e) {
+        const err = e as Error
         console.error(e)
-        throw new Error("didn't fetch")
+        throw err
       }
     }
