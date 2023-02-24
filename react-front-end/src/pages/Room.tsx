@@ -1,18 +1,22 @@
-import { useEffect, useState, useReducer } from "react"
+import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import { initialState, roomReducer } from "../utils/room-reducer"
+import { scoreQueryFn } from "../utils/room-utils"
 
 import { useQuery, useQueryClient, useMutation } from 'react-query'
 
 
 function Room() {
     const { roomId: roomName } = useParams()
+    const navigate = useNavigate()
+    if (!roomName) {
+      navigate(`/join-room`)
+      throw new Error("No Room name provided")
+    }
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
-    const navigate = useNavigate()
     const [username] = useState(() => {
       const localUName = localStorage.getItem("username")
       if (localUName) {
@@ -24,23 +28,8 @@ function Room() {
     }
     );
 
-    const [state, dispatch] = useReducer(roomReducer, initialState)
-
     const queryClient = useQueryClient()
-    const scoreQuery = useQuery(['score', username], async () => {
-      const r = await fetch(`${import.meta.env.VITE_SERVER_URL}/room-score/${roomName}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body : JSON.stringify({ username }),
-      })
-        .then(res => res.json())
-
-      if (r.ok || r.status === 304 ) return r
-      throw new Error("Unable to fetch")
-     }
-    )
+    const scoreQuery = useQuery(['score', username], () => scoreQueryFn(username, roomName))
 
     if (scoreQuery.data) {
       console.log({data : scoreQuery.data } )
@@ -98,18 +87,18 @@ function Room() {
 
   const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, holeNumber: number) => {
     console.log(`value: ${e.target.value}, hole: ${holeNumber}`)
-    if (state === null) {
+    if (!scoreQuery.data) {
       console.error("state is currently null while changing score")
       return
     }
-    dispatch({
-      type: "UPDATE-PLAYER-SCORE",
-      payload: {
-        username,
-        hole: holeNumber,
-        value: Number(e.target.value)
-      }
-    })
+    // dispatch({
+    //   type: "UPDATE-PLAYER-SCORE",
+    //   payload: {
+    //     username,
+    //     hole: holeNumber,
+    //     value: Number(e.target.value)
+    //   }
+    // })
   }
   
   return <>
@@ -128,22 +117,22 @@ function Room() {
           <thead className="">
             <tr className="text-xl">
               <th className="p-2">Holes</th>
-              {state && state.players.map(player => (
-                <th className="p-2">{player.name}</th>
+              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
+                <th className="p-2" key={player.id}>{player.name}</th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {state && state.holes.map((hole, i) => (
-              <tr className="text-lg py-2">
+            {scoreQuery.isSuccess && scoreQuery.data.holes.map((hole, i) => (
+              <tr className="text-lg py-2" key={hole.id}>
                 <td>{hole.number}</td>
-                {state.players.map((player, j) => (
-                  <td>
+                {scoreQuery.data.players.map((player, j) => (
+                  <td key={`${player.id}${hole.id}`}>
                     <input
                       className="bg-gray-800 w-16 text-center"
                       onChange={(e) => handleHoleChange(e, i)}
-                      value={player.scores[i] || ""}
+                      value={player.scores[i].score ?? ""}
                       disabled={j !== 0}
                       type="number"
                     />
@@ -151,9 +140,9 @@ function Room() {
                 ))}
               </tr>
             ))}
-            {creatingHole && state ? (
+            {creatingHole && scoreQuery.data ? (
               <tr>
-                <td>{(state?.holes.at(-1)?.number ?? 0) + 1}</td>
+                <td>{(scoreQuery.data?.holes.at(-1)?.number ?? 0) + 1}</td>
                 <td>
                   <input 
                       className="bg-gray-800 w-16 text-center"
@@ -175,8 +164,8 @@ function Room() {
           <tfoot>
             <tr>
               <td>Total</td>
-              {state && state.players.map(player => (
-                <td>{player.scores.reduce((p,v) => p + v, 0)}</td>
+              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
+                <td key={`total${player.id}`}>{player.scores.reduce((p,v) => p + v.score, 0)}</td>
               ))}
             </tr>
           </tfoot>

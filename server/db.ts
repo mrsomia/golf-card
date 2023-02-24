@@ -121,11 +121,27 @@ export async function getRoomScore(roomName: string) {
   }
 
   // This Transforms the roomData above into the format for the frontend
-  const players = roomData.users.map(user => {
-    const scores = roomData.holes.map(hole => {
+  
+  // The changes to this section below are to ensure there is always a userScore created for each hold and user in the room
+  // this should provide the frontend with the userscore id
+  // making updates to the usersocre easier
+  const players = roomData.users.map(async user => {
+    const scoresPromises = roomData.holes.map(async hole => {
       const scoreForThisHole = user.userScores.find(userScore => userScore.holeId === hole.id)
-      return scoreForThisHole?.score ?? 0
+      let newScore
+      if (!scoreForThisHole) {
+        newScore = await prisma.userScore.create({
+            data: {
+                holeId: hole.id,
+                userId: user.id,
+            }
+      })
+
+      }
+      return scoreForThisHole ?? newScore
     })
+    
+    const scores = await Promise.all(scoresPromises)
 
    return {
       name: user.name,
@@ -136,8 +152,27 @@ export async function getRoomScore(roomName: string) {
 
   const result = {
     holes: roomData.holes,
-    players,
+    players: await Promise.all(players)
   }
 
   return result
+}
+
+export async function updatePlayerScore({
+    userScoreId,
+    newScore,
+}: {
+    userScoreId: number;
+    newScore: number;
+}) {
+    const newUserScore = await prisma.userScore.update({
+        where: {
+            id: userScoreId,
+        },
+        data: {
+            score: newScore,
+            lastAccessed: new Date(),
+        }
+    })
+    return newUserScore
 }
