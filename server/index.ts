@@ -13,9 +13,11 @@ import {
   addUserToRoom,
   getRoomScore,
   getUserFromDB,
+  createNewHole,
+  validateUserIsInRoom,
 } from "./db.js";
 
-
+// Commented out for dev
 // scheduleJob('*/15 * * * *', async function() {
 //   deleteStaleDBItems()
 // })
@@ -94,6 +96,38 @@ app.post('/create-room', async (_req, res) => {
     }
     await addRoomToDB(room)
     res.json({ room })
+})
+
+app.post("/create-hole", async (req, res) => {
+  console.log(req.body)
+  let userName
+  let roomId
+  let holeNumber
+  
+  // Parse/validate the input
+  try {
+    roomId = z.number().parse(req.body.roomId)
+    holeNumber = z.number().parse(req.body.holeNumber)
+    userName = z.string().parse(req.body.username)
+  } catch (e) {
+    res.status(400).json(e)
+    return
+  }
+  try {
+    await validateUserIsInRoom(userName, roomId)
+  } catch (e) {
+    res.status(403).send("Unauthorized")
+    return
+  }
+  
+  try {
+    const newHole = await createNewHole(roomId, holeNumber)
+    res.status(200).json(newHole)
+  } catch (e) {
+    res.status(503).send()
+    return
+  }
+
 })
 
 app.post("/room-score/:roomName", async (req, res) => {

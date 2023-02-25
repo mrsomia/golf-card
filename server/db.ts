@@ -183,3 +183,35 @@ export async function updatePlayerScore({
     })
     return newUserScore
 }
+
+export async function createNewHole(roomId: number, holeNumber: number) {
+  const hole = await prisma.hole.create({
+    data: {
+      number: holeNumber,
+      roomId: roomId
+    }
+  })
+  if (!hole) throw Error("Unable to create hole")
+  return hole
+}
+
+export async function validateUserIsInRoom(username: string, roomId: number) {
+  const room = await prisma.room.findUnique({
+    where: {
+      id: roomId,
+    },
+    include: {
+      users: true
+    },
+  })
+  
+  if (!room) throw new Error("No Room Found")
+  if (!room.users) throw new Error("No Users found in room")
+
+  const user = room.users.find(user => user.name === username)
+
+  if (!user) throw new Error("User not found in room")
+    
+  return user
+}
+
