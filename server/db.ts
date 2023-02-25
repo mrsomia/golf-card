@@ -215,3 +215,22 @@ export async function validateUserIsInRoom(username: string, roomId: number) {
   return user
 }
 
+export async function validateUserIdOwnsUserScore({
+  userId,
+  userScoreId,
+}: {
+  userId: number;
+  userScoreId: number;
+}) {
+  const userScore = await prisma.userScore.findUnique({
+    where: {
+      id: userScoreId
+    }
+  })
+
+  if (!userScore) throw new Error(`Unable to find User Score record with id ${userScoreId}`)
+  
+  if (userScore.userId !== userId) throw new Error(`UserID on userscore does not match given userID`)
+
+  return userScore
+}

@@ -13,8 +13,10 @@ import {
   addUserToRoom,
   getRoomScore,
   getUserFromDB,
+  updatePlayerScore,
   createNewHole,
   validateUserIsInRoom,
+  validateUserIdOwnsUserScore,
 } from "./db.js";
 
 // Commented out for dev
@@ -152,12 +154,32 @@ app.post("/room-score/:roomName", async (req, res) => {
 })
 
 app.post("/update-score", async (req, res) => {
-  const { username, roomName, update } = req.body
+  let userScoreId
+  let newScore
+  let userId
   try {
-    const validatedUserName = z.string().parse(username)
-    const validateRoomName = z.string().parse(roomName)
+    userScoreId = z.number().parse(req.body.userScoreId)
+    newScore = z.number().parse(req.body.score)
+    userId = z.number().parse(req.body.userId)
   } catch (e) {
+    res.status(400).json(e)
+    return
+  }
+  
+  try {
+    await validateUserIdOwnsUserScore({ userScoreId, userId })
+  } catch (e) {
+    res.status(403).json(e)
+    return
+  }
 
+  try {
+    const updatedPlayerScore = await updatePlayerScore({ userScoreId, newScore })
+    res.status(200).json(updatedPlayerScore)
+    return
+  } catch (e) {
+    res.status(503).send()
+    return
   }
 })
 
