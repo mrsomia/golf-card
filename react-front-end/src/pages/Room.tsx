@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import { scoreQueryFn } from "../utils/room-utils"
+import { scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
+import { z } from 'zod'
 
 import { useQuery, useQueryClient, useMutation } from 'react-query'
 
@@ -29,11 +30,45 @@ function Room() {
     );
 
     const queryClient = useQueryClient()
-    const scoreQuery = useQuery(['score', username], () => scoreQueryFn(username, roomName))
+    const scoreQuery = useQuery(['score'], () => scoreQueryFn(username, roomName))
 
     if (scoreQuery.data) {
       console.log({data : scoreQuery.data } )
     }
+
+    const scoreMutation = useMutation({
+      mutationFn: updateUserScoreFn,
+      onMutate: async ({ userScoreId, userId, score }) => {
+        await queryClient.cancelQueries({ queryKey: "score" })
+        const previousState = queryClient.getQueryData("score")
+
+        queryClient.setQueryData(["score"], (old)  => {
+          let typedOld
+          try{
+            typedOld = scoreSchema.parse(old)
+          } catch (e) {
+            return old
+          }
+          const { holes , players } = typedOld
+          if (players[0].name !== username) {
+            console.error("First player is not the current user")
+            return typedOld
+          }
+          const oldUserScoreIndex = players[0].scores.findIndex(score => score.id === userScoreId)
+          if ( oldUserScoreIndex < 0 ) return typedOld
+          players[0].scores[oldUserScoreIndex].score = score
+          return { holes, players }
+        })
+
+        return { previousState }
+      },
+      onError: (err, scoreVariables, context) => {
+        if (context) {
+          queryClient.setQueryData(["score"], context.previousState)
+        }
+      },
+      onSettled: () => queryClient.invalidateQueries("score")
+    })
 
     // Sets up the socket
     useEffect(() => {
@@ -77,29 +112,17 @@ function Room() {
         }
     }, [username])
 
-    const updateScore = () => {
-    if (!socket) {
-      console.error("Socket is not establised")
-    } else {
-      socket.emit('update-score', )
+  const handleHoleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    userScore: z.infer<typeof scoreSchema.shape.players.element.shape.scores.element>
+    ) => {
+      console.log(`value: ${e.target.value}, hole: ${userScore.id}`)
+      scoreMutation.mutate({
+        userScoreId: userScore.id,
+        userId: userScore.userId,
+        score: Number(e.target.value)
+      })
     }
-  }
-
-  const handleHoleChange = (e: React.ChangeEvent<HTMLInputElement>, holeNumber: number) => {
-    console.log(`value: ${e.target.value}, hole: ${holeNumber}`)
-    if (!scoreQuery.data) {
-      console.error("state is currently null while changing score")
-      return
-    }
-    // dispatch({
-    //   type: "UPDATE-PLAYER-SCORE",
-    //   payload: {
-    //     username,
-    //     hole: holeNumber,
-    //     value: Number(e.target.value)
-    //   }
-    // })
-  }
   
   return <>
     <div
@@ -131,7 +154,7 @@ function Room() {
                   <td key={`${player.id}${hole.id}`}>
                     <input
                       className="bg-gray-800 w-16 text-center"
-                      onChange={(e) => handleHoleChange(e, i)}
+                      onChange={(e) => handleHoleChange(e, player.scores[i])}
                       value={player.scores[i].score ?? ""}
                       disabled={j !== 0}
                       type="number"

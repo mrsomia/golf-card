@@ -47,3 +47,33 @@ export const scoreQueryFn = async (username: string, roomName: string) => {
   }
 }
     
+export const updateUserScoreFn = async ({
+  userScoreId,
+  userId,
+  score,
+} : {
+  userScoreId: number;
+  userId: number;
+  score: number;
+}) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/update-score`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body : JSON.stringify({ userScoreId, userId, score }),
+    })
+    const r = res.json()
+
+    if (!res.ok) {
+      console.error(`Error updating Score`)
+      console.warn({ res, r })
+      throw new Error(`Error updating Score`)
+    }
+
+    return r
+  } catch (e) {
+    throw e
+  }
+}
