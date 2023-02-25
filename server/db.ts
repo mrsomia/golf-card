@@ -81,9 +81,13 @@ export async function addUserToRoom(userName: string | User, roomName: string) {
       }
     }
 
-    await prisma.userScore.createMany({
+    const { count } = await prisma.userScore.createMany({
       data: userScores
     })
+
+    if (count !== room.holes.length) {
+      console.error(`Unable to create userscores for each hole for ${userName} in room: ${roomName}`)
+    }
   }
 }
 
@@ -128,8 +132,11 @@ export async function getRoomScore(roomName: string) {
   const players = roomData.users.map(async user => {
     const scoresPromises = roomData.holes.map(async hole => {
       const scoreForThisHole = user.userScores.find(userScore => userScore.holeId === hole.id)
+      // This part cretes a new score if scoreForThisHole is not found
       let newScore
       if (!scoreForThisHole) {
+        console.info(`Creating new score for ${user.name} in hole: ${hole.number}
+                    hole ID: ${hole.id}`)
         newScore = await prisma.userScore.create({
             data: {
                 holeId: hole.id,
