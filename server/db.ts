@@ -195,15 +195,28 @@ export async function createNewHole(roomId: number, holeNumber: number) {
   return hole
 }
 
-export async function validateUserIsInRoom(username: string, roomId: number) {
-  const room = await prisma.room.findUnique({
-    where: {
-      id: roomId,
-    },
-    include: {
-      users: true
-    },
-  })
+export async function validateUserIsInRoom(username: string, roomId: number | string) {
+
+  let room
+  if (typeof roomId === 'number') {
+    room = await prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+      include: {
+        users: true
+      },
+    })
+  } else {
+    room = await prisma.room.findUnique({
+      where: {
+        name: roomId,
+      },
+      include: {
+        users: true
+      },
+    })
+  }
   
   if (!room) throw new Error("No Room Found")
   if (!room.users) throw new Error("No Users found in room")

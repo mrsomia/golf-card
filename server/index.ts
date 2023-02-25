@@ -133,18 +133,24 @@ app.post("/create-hole", async (req, res) => {
 })
 
 app.post("/room-score/:roomName", async (req, res) => {
-  let validatedUserName: string
-  console.log(req.body)
+  let userName
+  let roomName
   try {
-    validatedUserName = z.string().parse(req.body.username)
+    userName = z.string().parse(req.body.username)
+    roomName = z.string().parse(req.params.roomName)
+  } catch (e) {
+    res.status(400).send()
+    return
+  }
+  try {
+    await validateUserIsInRoom(userName, roomName)
   } catch (e) {
     res.status(403).send()
     return
   }
+
   try {
-    const validateRoomName = z.string().parse(req.params.roomName)
-    const roomScore = await getRoomScore(validateRoomName)
-    console.log("roomScore")
+    const roomScore = await getRoomScore(roomName)
     console.log(roomScore)
     res.json(roomScore)
   } catch (e) {
