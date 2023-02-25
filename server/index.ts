@@ -133,8 +133,8 @@ app.post("/create-hole", async (req, res) => {
 })
 
 app.post("/room-score/:roomName", async (req, res) => {
-  let userName
-  let roomName
+  let userName: string
+  let roomName: string
   try {
     userName = z.string().parse(req.body.username)
     roomName = z.string().parse(req.params.roomName)
@@ -151,10 +151,21 @@ app.post("/room-score/:roomName", async (req, res) => {
 
   try {
     const roomScore = await getRoomScore(roomName)
+    if (!roomScore) throw (`Unable to fetch room score for: ${roomName}`)
+    roomScore.players.sort((a,z) => {
+      if (a.name === userName) {
+        return -1
+      } else if (z.name === userName) {
+        return 1
+      } else {
+        return a.id - z.id
+      }
+    })
     console.log(roomScore)
     res.json(roomScore)
+    return
   } catch (e) {
-    res.send(e)
+    res.status(503).send(e)
     return
   }
 })
