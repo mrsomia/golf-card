@@ -161,6 +161,7 @@ app.post("/room-score/:roomName", async (req, res) => {
         return a.id - z.id
       }
     })
+    roomScore.holes.sort((a,z) => a.number - z.number)
     console.log(roomScore)
     res.json(roomScore)
     return
