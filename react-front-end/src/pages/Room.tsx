@@ -155,6 +155,7 @@ function Room() {
           <thead className="">
             <tr className="text-xl">
               <th className="p-2">Holes</th>
+              <th className="p-2">Par</th>
               {playerQuery.isSuccess && playerQuery.data.map(player => (
                 <th className="p-2" key={player.id}>{player.name}</th>
               ))}
@@ -165,6 +166,7 @@ function Room() {
             {holeQuery.isSuccess && holeQuery.data.map((hole, i) => (
               <tr className="text-lg py-2" key={hole.id}>
                 <td>{hole.number}</td>
+                <td>{hole.par}</td>
                 {playerQuery.isSuccess && playerQuery.data.map((player, j) => (
                   <td key={`${player.id}${hole.id}`}>
                     <input
