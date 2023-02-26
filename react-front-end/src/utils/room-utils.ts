@@ -37,14 +37,17 @@ export const scoreQueryFn = async (username: string, roomName: string) => {
       body : JSON.stringify({ username }),
     })
     const r = await res.json()
-    console.log({ res, r })
-    if (res.ok) {
-      const validatedScore = scoreSchema.parse(r)
-      return validatedScore
-    } else {
+
+    if(!res.ok) {
+      console.log({ res, r })
       throw new Error(`Unable to complete fetch, response status was: ${res.status}`)
     }
+
+    const validatedScore = scoreSchema.parse(r)
+    return validatedScore
+
   } catch (e) {
+    
     const err = e as Error
     console.error(e)
     throw err
