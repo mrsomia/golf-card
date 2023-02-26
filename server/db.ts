@@ -158,6 +158,10 @@ export async function getRoomScore(roomName: string) {
   })
 
   const result = {
+    room: {
+      id: roomData.id,
+      name: roomData.name,
+    },
     holes: roomData.holes,
     players: await Promise.all(players)
   }

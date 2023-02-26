@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
 export const scoreSchema = z.object({
+  room: z.object({
+    id: z.number(),
+    name: z.string(),
+  }),
   holes: z.array(z.object({
     number: z.number(),
     par: z.number(),
