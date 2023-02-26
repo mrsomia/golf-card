@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
 import { useNavigate, useParams } from "react-router-dom"
-import { scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
+import { createHoleFn, scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
 import { z } from 'zod'
 
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
@@ -171,7 +171,7 @@ function Room() {
 
           <tbody>
             {holeQuery.isSuccess && holeQuery.data.map((hole, i) => (
-              <tr className="text-lg py-2" key={hole.id}>
+              <tr className="text-lg" key={hole.id}>
                 <td>{hole.number}</td>
                 <td>{hole.par}</td>
                 {playerQuery.isSuccess && playerQuery.data.map((player, j) => (
@@ -187,7 +187,8 @@ function Room() {
                 ))}
               </tr>
             ))}
-            {creatingHole && holeQuery.data ? (
+
+            {creatingHole && holeQuery.data && (
               <tr>
                 <td>{(holeQuery.data?.at(-1)?.number ?? 0) + 1}</td>
                 <td>
@@ -198,24 +199,35 @@ function Room() {
                       type="number"
                       />
                 </td>
+                <td className="py-4" colSpan={999}>
+                  <
+                    button 
+                    className="text-center p-2 px-3"
+                    onClick={(e) => console.warn(e)}
+                  >
+                    Add
+                  </button>
+                </td>
               </tr>
-            ) : (
-            <tr>
-              <td colSpan={100} className="text-center">
-                <button onClick={() => setCreatingHole(true)}>+ New Hole</button>
-              </td>
-            </tr>
             )}
-          </tbody>
 
-          <tfoot>
-            <tr>
-              <td>Total</td>
+            <tr className="text-lg py-2">
+              <td className="py-4">Total</td>
+              <td></td>
               {playerQuery.isSuccess && playerQuery.data.map(player => (
                 <td key={`total${player.id}`}>{player.scores.reduce((p,v) => p + v.score, 0)}</td>
               ))}
             </tr>
-          </tfoot>
+
+            {!creatingHole && (
+              <tr>
+                <td colSpan={100} className="text-center py-4">
+                  <button onClick={() => setCreatingHole(true)}>+ New Hole</button>
+                </td>
+              </tr>
+            )}
+          </tbody>
+
         </table>
       </div>
 
