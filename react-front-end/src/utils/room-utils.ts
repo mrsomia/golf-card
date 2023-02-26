@@ -84,3 +84,35 @@ export const updateUserScoreFn = async ({
     throw e
   }
 }
+
+
+export const createHoleFn = async ({
+  userName,
+  roomId,
+  holeNumber,
+} : {
+  userName: string;
+  roomId: number;
+  holeNumber: number;
+}) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/create-hole`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body : JSON.stringify({ userName, roomId, holeNumber }),
+    })
+    const r = res.json()
+
+    if (!res.ok) {
+      console.error(`Error updating Score`)
+      console.warn({ res, r })
+      throw new Error(`Error updating Score`)
+    }
+
+    return r
+  } catch (e) {
+    throw e
+  }
+}

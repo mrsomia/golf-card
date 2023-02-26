@@ -48,10 +48,6 @@ function Room() {
       select: roomData => roomData.players,
     })
 
-    if (playerQuery.data) {
-      console.log({data : playerQuery.data } )
-    }
-
     const scoreMutation = useMutation({
       mutationFn: updateUserScoreFn,
       onMutate: async ({ userScoreId, userId, score }) => {
@@ -83,6 +79,17 @@ function Room() {
         }
       },
       onSettled: () => queryClient.invalidateQueries(["players"])
+    })
+  
+    const createHoleMutation = useMutation({
+      mutationFn: createHoleFn,
+      onMutate: async ({ userName, roomId, holeNumber }) => {
+
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(["holes"])
+        queryClient.invalidateQueries(["players"])
+      }
     })
 
     // Sets up the socket
