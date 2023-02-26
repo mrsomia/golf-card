@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
 import { z } from 'zod'
 
-import { useQuery, useQueryClient, useMutation } from 'react-query'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 
 
 function Room() {
@@ -30,44 +30,59 @@ function Room() {
     );
 
     const queryClient = useQueryClient()
-    const scoreQuery = useQuery(['score'], () => scoreQueryFn(username, roomName))
+    const roomQuery = useQuery({
+      queryKey: ['room'], 
+      queryFn: () => scoreQueryFn(username, roomName),
+      select: roomData => roomData.room,
+    })
 
-    if (scoreQuery.data) {
-      console.log({data : scoreQuery.data } )
+    const holeQuery = useQuery({
+      queryKey: ['holes'], 
+      queryFn: () => scoreQueryFn(username, roomName),
+      select: roomData => roomData.holes,
+    })
+
+    const playerQuery = useQuery({
+      queryKey: ['players'], 
+      queryFn: () => scoreQueryFn(username, roomName),
+      select: roomData => roomData.players,
+    })
+
+    if (playerQuery.data) {
+      console.log({data : playerQuery.data } )
     }
 
     const scoreMutation = useMutation({
       mutationFn: updateUserScoreFn,
       onMutate: async ({ userScoreId, userId, score }) => {
-        await queryClient.cancelQueries({ queryKey: "score" })
-        const previousState = queryClient.getQueryData("score")
+        await queryClient.cancelQueries({ queryKey: ["players"] })
+        const previousState = queryClient.getQueryData(["players"])
 
-        queryClient.setQueryData(["score"], (old)  => {
-          let typedOld
+        queryClient.setQueryData(["players"], (old)  => {
+          let players
           try{
-            typedOld = scoreSchema.parse(old)
+            players = scoreSchema.shape.players.parse(old)
           } catch (e) {
             return old
           }
-          const { holes , players } = typedOld
           if (players[0].name !== username) {
             console.error("First player is not the current user")
-            return typedOld
+            return players
           }
           const oldUserScoreIndex = players[0].scores.findIndex(score => score.id === userScoreId)
-          if ( oldUserScoreIndex < 0 ) return typedOld
+          if ( oldUserScoreIndex < 0 ) return players
           players[0].scores[oldUserScoreIndex].score = score
-          return { holes, players }
+          return { players }
         })
 
         return { previousState }
       },
       onError: (err, scoreVariables, context) => {
         if (context) {
-          queryClient.setQueryData(["score"], context.previousState)
+          queryClient.setQueryData(["players"], context.previousState)
         }
       },
-      onSettled: () => queryClient.invalidateQueries("score")
+      onSettled: () => queryClient.invalidateQueries(["players"])
     })
 
     // Sets up the socket
@@ -140,17 +155,17 @@ function Room() {
           <thead className="">
             <tr className="text-xl">
               <th className="p-2">Holes</th>
-              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
+              {playerQuery.isSuccess && playerQuery.data.map(player => (
                 <th className="p-2" key={player.id}>{player.name}</th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {scoreQuery.isSuccess && scoreQuery.data.holes.map((hole, i) => (
+            {holeQuery.isSuccess && holeQuery.data.map((hole, i) => (
               <tr className="text-lg py-2" key={hole.id}>
                 <td>{hole.number}</td>
-                {scoreQuery.data.players.map((player, j) => (
+                {playerQuery.isSuccess && playerQuery.data.map((player, j) => (
                   <td key={`${player.id}${hole.id}`}>
                     <input
                       className="bg-gray-800 w-16 text-center"
@@ -163,9 +178,9 @@ function Room() {
                 ))}
               </tr>
             ))}
-            {creatingHole && scoreQuery.data ? (
+            {creatingHole && holeQuery.data ? (
               <tr>
-                <td>{(scoreQuery.data?.holes.at(-1)?.number ?? 0) + 1}</td>
+                <td>{(holeQuery.data?.at(-1)?.number ?? 0) + 1}</td>
                 <td>
                   <input 
                       className="bg-gray-800 w-16 text-center"
@@ -187,7 +202,7 @@ function Room() {
           <tfoot>
             <tr>
               <td>Total</td>
-              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
+              {playerQuery.isSuccess && playerQuery.data.map(player => (
                 <td key={`total${player.id}`}>{player.scores.reduce((p,v) => p + v.score, 0)}</td>
               ))}
             </tr>
