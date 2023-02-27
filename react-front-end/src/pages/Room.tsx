@@ -83,12 +83,35 @@ function Room() {
   
     const createHoleMutation = useMutation({
       mutationFn: createHoleFn,
-      onMutate: async ({ userName, roomId, holeNumber }) => {
+      onMutate: async ({ userName, roomId, holeNumber, par }) => {
+        await queryClient.cancelQueries(["holes"])
 
+        const previousStateHoles = queryClient.getQueryData(["holes"])
+
+        queryClient.setQueryData(["holes"], (old) => {
+          let holes
+          try {
+            holes = scoreSchema.shape.holes.parse(old)
+          } catch (e) {
+            return old
+          }
+          holes.push({
+            number: holeNumber,
+            roomId,
+            id: 99999999,
+            par,
+            lastAccessed: (new Date()).toISOString(),
+          })
+
+          return holes
+        })
+
+        return { previousStateHoles }
       },
       onSuccess: () => {
         queryClient.invalidateQueries(["holes"])
         queryClient.invalidateQueries(["players"])
+        queryClient.invalidateQueries(["score"])
       }
     })
 
@@ -134,7 +157,7 @@ function Room() {
         }
     }, [username])
 
-  const handleHoleChange = (
+  const handleHoleScoreChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     userScore: z.infer<typeof scoreSchema.shape.players.element.shape.scores.element>
     ) => {
@@ -146,6 +169,21 @@ function Room() {
       })
     }
   
+  const handleAddHole = () => {
+    if (!roomQuery.data) {
+      console.error("Unable to find roomQuery data")
+      return
+    }
+    createHoleMutation.mutate({
+      userName: username,
+      holeNumber: holeQuery.data?.at(-1)?.number ?? 0 + 1,
+      roomId: roomQuery.data.id,
+      par: newPar
+    })
+    setNewPar(0)
+    setCreatingHole(false)
+  }
+
   return <>
     <div
       className='flex flex-col md:justify-center items-center w-screen min-h-screen
@@ -178,7 +216,7 @@ function Room() {
                   <td key={`${player.id}${hole.id}`}>
                     <input
                       className="bg-gray-800 w-16 text-center"
-                      onChange={(e) => handleHoleChange(e, player.scores[i])}
+                      onChange={(e) => handleHoleScoreChange(e, player.scores[i])}
                       value={player.scores[i].score ?? ""}
                       disabled={j !== 0}
                       type="number"
@@ -203,7 +241,7 @@ function Room() {
                   <
                     button 
                     className="text-center p-2 px-3"
-                    onClick={(e) => console.warn(e)}
+                    onClick={handleAddHole}
                   >
                     Add
                   </button>

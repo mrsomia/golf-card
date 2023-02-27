@@ -90,10 +90,12 @@ export const createHoleFn = async ({
   userName,
   roomId,
   holeNumber,
+  par,
 } : {
   userName: string;
   roomId: number;
   holeNumber: number;
+  par: number;
 }) => {
   try {
     const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/create-hole`, {
@@ -101,14 +103,14 @@ export const createHoleFn = async ({
       headers: {
         'Content-Type': 'application/json'
       },
-      body : JSON.stringify({ userName, roomId, holeNumber }),
+      body : JSON.stringify({ username: userName, roomId, holeNumber, par }),
     })
     const r = res.json()
 
     if (!res.ok) {
-      console.error(`Error updating Score`)
+      console.error(`Error creating hole`)
       console.warn({ res, r })
-      throw new Error(`Error updating Score`)
+      throw new Error(`Error creating hole`)
     }
 
     return r

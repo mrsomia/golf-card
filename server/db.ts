@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient, User, Hole } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
@@ -101,7 +101,7 @@ export async function getUserFromDB(username: string) {
 }
 
 export async function getRoomScore(roomName: string) {
-  const roomData = await prisma.room.findUnique({
+  const roomData = await prisma.room.update({
     where: {
       name: roomName
     },
@@ -117,6 +117,9 @@ export async function getRoomScore(roomName: string) {
         }
       },
     },
+    data: {
+      lastAccessed: new Date()
+    }
   })
   
   if (roomData === null) {
@@ -188,14 +191,64 @@ export async function updatePlayerScore({
     return newUserScore
 }
 
-export async function createNewHole(roomId: number, holeNumber: number) {
-  const hole = await prisma.hole.create({
-    data: {
-      number: holeNumber,
-      roomId: roomId
+export function findNextHoleNumber (holes: Hole[]) {
+  let number = holes.length + 1
+  console.log(`number: ${number}` )
+  holes.sort((a,z) => a.number - z.number)
+  console.log("holes")
+  console.log(holes)
+  for (let i = 0; i < holes.length; i++) {
+    if (holes[i].number === i + 1) continue
+    number = i + 1
+  }
+  return number
+}
+
+export async function createNewHole(roomId: number, holeNumber: number, par: number) {
+  const holes = await prisma.hole.findMany({
+    where: {
+      roomId,
     }
   })
+  
+  let number = findNextHoleNumber(holes)
+  console.log(`new hole number is ${number}`)
+  console.log(`roomId: ${roomId}`)
+  const hole = await prisma.hole.create({
+    data: {
+      number,
+      roomId: roomId,
+      par: par,
+    },
+    include: {
+      room: {
+        include: {
+          users: true
+        }
+      }
+    }
+  })
+  console.log("Hole")
+  console.log(hole)
   if (!hole) throw Error("Unable to create hole")
+  let userScores: Prisma.UserScoreCreateManyInput[] = []
+
+  for (const user of hole.room.users) {
+    userScores.push({
+      userId: user.id,
+      holeId: hole.id,
+    })
+  }
+
+
+  const { count } = await prisma.userScore.createMany({
+    data: userScores
+  })
+
+  if (count !== hole.room.users.length) {
+    console.error(`Unable to create userscores for each user in hole: ${hole.id} in room: ${hole.room.name}`)
+  }
+
   return hole
 }
 
