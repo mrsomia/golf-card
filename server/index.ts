@@ -17,6 +17,7 @@ import {
   createNewHole,
   validateUserIsInRoom,
   validateUserIdOwnsUserScore,
+  validateOrCreateUserInRoom,
 } from "./db.js";
 
 // Commented out for dev
@@ -85,6 +86,33 @@ roomIo.on("connect", (socket) => {
 });
 
 app.get('/', (_req, res) => res.json({ message: "hello world" }))
+
+app.post("join-room", async (req, res) => {
+  let username
+  let roomName
+  try {
+    username = z.string().parse(req.body.username)
+    roomName = z.string().parse(req.body.roomName)
+  } catch (e) {
+    console.error("Error validating request body")
+    console.error(e)
+    console.info(req.body)
+    res.status(400).json(e)
+    return
+  }
+
+  try {
+    const userAndRoom = await validateOrCreateUserInRoom(username, roomName)
+    res.status(200).json(userAndRoom)
+    return
+  } catch (e) {
+    console.error("Error Adding user to room")
+    console.error(e)
+    console.info(req.body)
+    res.status(400).json(e)
+    return
+  }
+})
 
 app.post('/create-room', async (_req, res) => {
     function createRoom() {

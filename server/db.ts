@@ -100,6 +100,54 @@ export async function getUserFromDB(username: string) {
     return user
 }
 
+export async function upsertUserToDb(username: string, roomId: number) {
+    let user = await prisma.user.findFirst({
+        where: {
+            name: username
+        }
+    })
+
+    user = await prisma.user.upsert({
+      where: {
+        id: user?.id,
+      },
+      update: {
+        lastAccessed: new Date(),
+        roomId,
+      },
+      create: {
+        name: username,
+        lastAccessed: new Date(),
+        roomId,
+      },
+      include: {
+        room: true,
+      },
+    })
+
+
+    return user
+}
+
+export async function validateOrCreateUserInRoom(username: string, roomName: string){
+  const room = await prisma.room.upsert({
+    where: {
+      name: roomName,
+    },
+    update: {
+      name: roomName,
+      lastAccessed: new Date(),
+    },
+    create: {
+      name: roomName,
+    }
+  })
+
+  const user = await upsertUserToDb(username, room.id)
+  
+  return { user , room }
+}
+
 export async function getRoomScore(roomName: string) {
   const roomData = await prisma.room.update({
     where: {
