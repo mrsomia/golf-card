@@ -87,7 +87,7 @@ roomIo.on("connect", (socket) => {
 
 app.get('/', (_req, res) => res.json({ message: "hello world" }))
 
-app.post("join-room", async (req, res) => {
+app.post("/join-room", async (req, res) => {
   let username
   let roomName
   try {
