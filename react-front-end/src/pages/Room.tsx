@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { io, type Socket } from 'socket.io-client'
-import { useNavigate, useParams } from "react-router-dom"
-import { createHoleFn, scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
+import { useLoaderData, useNavigate, useParams } from "react-router-dom"
+import { createHoleFn, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
 import { z } from 'zod'
 
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
@@ -14,6 +14,9 @@ function Room() {
       navigate(`/join-room`)
       throw new Error("No Room name provided")
     }
+    const loaderData = useLoaderData()
+    const roomAndUser = roomDataSchema.parse(loaderData)
+    localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
     const [socket, setSocket] = useState<null | Socket>(null)
     const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
     const [creatingHole, setCreatingHole] = useState(false)
@@ -139,7 +142,7 @@ function Room() {
           userLastAccessed: string;
           roomLastAccessed: string;
         }) => {
-          window.localStorage.setItem("connectedTo", JSON.stringify({
+          window.localStorage.setItem("connectedGolfRoom", JSON.stringify({
               roomName,
               roomId,
               userId,

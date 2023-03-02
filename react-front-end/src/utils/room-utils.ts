@@ -27,6 +27,21 @@ export const scoreSchema = z.object({
   }))
 })
 
+
+export const roomDataSchema = z.object({
+  room: z.object({
+      id: z.number(),
+      lastAccessed: z.string(),
+      name: z.string(),
+    }),
+  user: z.object({
+    id: z.number(),
+    lastAccessed: z.string(),
+    name: z.string(),
+    roomId: z.number(),
+  })
+})
+
 export const scoreQueryFn = async (username: string, roomName: string) => {
   try{
     const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/room-score/${roomName}`, {
