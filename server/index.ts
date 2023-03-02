@@ -109,7 +109,7 @@ app.post("/join-room", async (req, res) => {
     console.error("Error Adding user to room")
     console.error(e)
     console.info(req.body)
-    res.status(400).json(e)
+    res.status(503).json(e)
     return
   }
 })
