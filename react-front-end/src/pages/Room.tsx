@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react"
-import { io, type Socket } from 'socket.io-client'
+import { useState, useEffect} from "react"
 import { useLoaderData, useNavigate, useParams } from "react-router-dom"
 import { createHoleFn, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
 import { z } from 'zod'
@@ -17,8 +16,7 @@ function Room() {
     const loaderData = useLoaderData()
     const roomAndUser = roomDataSchema.parse(loaderData)
     localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
-    const [socket, setSocket] = useState<null | Socket>(null)
-    const [isConnected, setIsConnected] = useState<boolean | null>(socket ? socket.connected : null);
+
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
     const [username] = useState(() => {
@@ -31,6 +29,10 @@ function Room() {
       }
     }
     );
+
+    useEffect(() => {
+      localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
+    }, [roomAndUser])
 
     const queryClient = useQueryClient()
     const roomQuery = useQuery({
@@ -117,48 +119,6 @@ function Room() {
         queryClient.invalidateQueries(["score"])
       }
     })
-
-    // Sets up the socket
-    useEffect(() => {
-        if (!username) return
-        const socket = io(`${import.meta.env.VITE_SERVER_URL}/api/room`)
-        setSocket(socket)
-        socket.on('connect', () => {
-            setIsConnected(true);
-        });
-
-        socket.on('disconnect', () => {
-            setIsConnected(false);
-        });
-
-        socket.emit('join-room', { roomName, username }, ({
-          userId, 
-          roomId, 
-          userLastAccessed, 
-          roomLastAccessed
-        } : {
-          userId: number;
-          roomId: number;
-          userLastAccessed: string;
-          roomLastAccessed: string;
-        }) => {
-          window.localStorage.setItem("connectedGolfRoom", JSON.stringify({
-              roomName,
-              roomId,
-              userId,
-              userLastAccessed,
-              roomLastAccessed,
-            })
-          )
-        })
-
-        return () => {
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('pong');
-            socket.close()
-        }
-    }, [username])
 
   const handleHoleScoreChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -272,11 +232,6 @@ function Room() {
         </table>
       </div>
 
-      <span
-        className={`text-lg font-medium m-4 ${!isConnected ? "text-orange-600" : ""}`}
-      >
-        Connected: { '' + isConnected }
-      </span>
     </div>
     </>
 }
