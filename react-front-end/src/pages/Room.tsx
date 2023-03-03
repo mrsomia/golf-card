@@ -52,7 +52,7 @@ function Room() {
         await queryClient.cancelQueries({ queryKey: ["players"] })
         const previousState = queryClient.getQueryData(["players"])
 
-        queryClient.setQueryData(["players"], (old)  => {
+        queryClient.setQueryData(["players"], (old: unknown)  => {
           let players
           try{
             players = scoreSchema.shape.players.parse(old)
@@ -86,7 +86,7 @@ function Room() {
 
         const previousStateHoles = queryClient.getQueryData(["holes"])
 
-        queryClient.setQueryData(["holes"], (old) => {
+        queryClient.setQueryData(["holes"], (old: unknown) => {
           let holes
           try {
             holes = scoreSchema.shape.holes.parse(old)
