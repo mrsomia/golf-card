@@ -9,26 +9,19 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 function Room() {
     const { roomId: roomName } = useParams()
     const navigate = useNavigate()
-    if (!roomName) {
-      navigate(`/join-room`)
-      throw new Error("No Room name provided")
-    }
+
     const loaderData = useLoaderData()
-    const roomAndUser = roomDataSchema.parse(loaderData)
-    localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
+    let roomAndUser: z.infer<typeof roomDataSchema>
+    try {
+      roomAndUser = roomDataSchema.parse(loaderData)
+    } catch (e) {
+      console.error(e)
+      navigate(`/join-room`)
+      throw new Error("No Room name/username provided")
+    }
 
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
-    const [username] = useState(() => {
-      const localUName = localStorage.getItem("username")
-      if (localUName) {
-        return localUName
-      } else {
-        navigate(`/join-room/${roomName}`)  
-        throw new Error("No username, should not reach this line")
-      }
-    }
-    );
 
     useEffect(() => {
       localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
@@ -37,19 +30,19 @@ function Room() {
     const queryClient = useQueryClient()
     const roomQuery = useQuery({
       queryKey: ['room'], 
-      queryFn: () => scoreQueryFn(username, roomName),
+      queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
       select: roomData => roomData.room,
     })
 
     const holeQuery = useQuery({
       queryKey: ['holes'], 
-      queryFn: () => scoreQueryFn(username, roomName),
+      queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
       select: roomData => roomData.holes,
     })
 
     const playerQuery = useQuery({
       queryKey: ['players'], 
-      queryFn: () => scoreQueryFn(username, roomName),
+      queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
       select: roomData => roomData.players,
     })
 
@@ -66,7 +59,7 @@ function Room() {
           } catch (e) {
             return old
           }
-          if (players[0].name !== username) {
+          if (players[0].name !== roomAndUser.user.name) {
             console.error("First player is not the current user")
             return players
           }
@@ -138,7 +131,7 @@ function Room() {
       return
     }
     createHoleMutation.mutate({
-      userName: username,
+      userName: roomAndUser.user.name,
       holeNumber: holeQuery.data?.at(-1)?.number ?? 0 + 1,
       roomId: roomQuery.data.id,
       par: newPar
