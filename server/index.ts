@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer } from "http";
 import { faker } from '@faker-js/faker'
 import cors from "cors";
 import { scheduleJob } from 'node-schedule';
@@ -33,8 +32,6 @@ app.use(cors({
 app.use(morgan('tiny'))
 
 app.use(express.json())
-
-const httpServer = createServer(app);
 
 app.get('/', (_req, res) => res.json({ message: "hello world" }))
 
@@ -183,4 +180,5 @@ app.post("/update-score", async (req, res) => {
   }
 })
 
-httpServer.listen(port, () => console.log(`Server is listening on port ${port}`));
+app.listen(port, () => console.log(`Server is listening on port ${port}`));
+
