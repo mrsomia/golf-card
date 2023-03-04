@@ -43,63 +43,6 @@ export async function addRoomToDB(roomName: string) {
   })
 }
 
-export async function addUserToRoom(userName: string | User, roomName: string) {
-  // may want to validate if a user exists here
-  if (typeof userName === 'string') {
-    const room = await prisma.room.update({
-      where: {
-        name: roomName
-      },
-      data: {
-        lastAccessed: new Date(),
-        users: {
-          create: {
-            name: userName
-          }
-        }
-      }, 
-      include: {
-        holes: true,
-        users : {
-          where: {
-            name: {
-              equals: userName,
-            }
-          }
-        }
-      }
-    })
-
-    let userScores: Prisma.UserScoreCreateManyInput[] = []
-
-    for (const user of room.users) {
-      for (const hole of room.holes) {
-        userScores.push({
-          userId: user.id,
-          holeId: hole.id,
-        })
-      }
-    }
-
-    const { count } = await prisma.userScore.createMany({
-      data: userScores
-    })
-
-    if (count !== room.holes.length) {
-      console.error(`Unable to create userscores for each hole for ${userName} in room: ${roomName}`)
-    }
-  }
-}
-
-export async function getUserFromDB(username: string) {
-    const user = await prisma.user.findFirst({
-        where: {
-            name: username
-        }
-    })
-    return user
-}
-
 export async function upsertUserToDb(username: string, roomId: number) {
     let user = await prisma.user.findFirst({
         where: {
