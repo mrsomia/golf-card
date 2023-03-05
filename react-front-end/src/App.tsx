@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
-import { z } from 'zod'
+import { useState } from 'react'
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { roomDataSchema } from './utils/room-utils'
 import HomePage from './pages/HomePage'
 import JoinRoomPage from './pages/JoinPage'
 import Room from './pages/Room';
@@ -16,21 +14,6 @@ function App() {
     const localUName = localStorage.getItem("username")
     return localUName ?? ""
   })
-
-  const [userState, setUserState] = useState<z.infer<typeof roomDataSchema>>()
-
-  useEffect(() => {
-    const localStateString = localStorage.getItem("connectedGolfRoom")
-    if (!localStateString) return
-
-    try {
-      const localState = roomDataSchema.parse(JSON.parse(localStateString))
-      setUserState(localState)
-    } catch (e) {
-      console.error(e)
-    }
-
-  }, [])
 
     const router = createBrowserRouter([
         {
@@ -56,6 +39,7 @@ function App() {
         {
             path: "room/:roomId",
             element: <Room />,
+            // Joins room on back end
             loader: async({ params }) => {
               const { roomId } = params
               if (!roomId) {
