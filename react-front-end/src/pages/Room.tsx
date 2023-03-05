@@ -1,6 +1,6 @@
 import { useState, useEffect} from "react"
 import { useLoaderData, useNavigate, useParams } from "react-router-dom"
-import { createHoleFn, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn } from "../utils/room-utils"
+import { createHoleFn, removeHole, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn, useRemoveHole } from "../utils/room-utils"
 import { z } from 'zod'
 
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
@@ -22,6 +22,8 @@ function Room() {
 
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
+
+    const [deletingHole, setDeletingHole] = useState(0)
 
     useEffect(() => {
       localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
@@ -113,6 +115,8 @@ function Room() {
       }
     })
 
+    const removeHole = useRemoveHole(queryClient)
+
   const handleHoleScoreChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     userScore: z.infer<typeof scoreSchema.shape.players.element.shape.scores.element>
@@ -179,6 +183,16 @@ function Room() {
                     />
                   </td>
                 ))}
+                <td 
+                  className="px-2 text-center w-16 text-red-500" 
+                  onClick={() => removeHole.mutate({
+                    holeId: hole.id,
+                    userName: roomAndUser.user.name,
+                    roomId: roomAndUser.room.id,
+                  })}
+                >
+                  X
+                </td>
               </tr>
             ))}
 

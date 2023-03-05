@@ -243,6 +243,60 @@ export async function createNewHole(roomId: number, holeNumber: number, par: num
   return hole
 }
 
+export async function removeHole(holeId: number, roomId: number) {
+  // TODO: implement
+  
+  // remove the hole - perhaps validate the holeNumber
+  const hole = await prisma.hole.delete({
+    where: {
+      id: holeId,
+    },
+  })
+
+  // find all holes in the room with numbers greater than the holeNumber
+  const holes = await prisma.hole.findMany({
+    where: {
+      AND:[
+        {
+          roomId: roomId,
+        },
+        {
+          number: {
+            gt : hole.number
+          }
+        }
+      ]
+    },
+  })
+
+  // update holes so their hole numbers are now -1
+  const { count } = await prisma.hole.updateMany({
+    where: {
+      AND:[
+        {
+          roomId: roomId,
+        },
+        {
+          number: {
+            gt : hole.number
+          }
+        }
+      ]
+    },
+    data: {
+      number: {
+        decrement: 1
+      }
+    }
+  })
+
+  if (holes.length !== count) {
+    throw new Error("Not all holes have had their number decremented")
+  }
+
+  return
+}
+
 export async function validateUserIsInRoom(username: string, roomId: number | string) {
 
   let room

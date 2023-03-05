@@ -14,6 +14,7 @@ import {
   validateUserIsInRoom,
   validateUserIdOwnsUserScore,
   validateOrCreateUserInRoom,
+  removeHole,
 } from "./db.js";
 
 // Commented out for dev
@@ -107,6 +108,44 @@ app.post("/create-hole", async (req, res) => {
   } catch (e) {
     console.error(e)
     res.status(503).send()
+    return
+  }
+
+})
+
+app.post("/remove-hole", async (req, res) => {
+  console.log("Request body")
+  console.log(req.body)
+  let userName
+  let roomId
+  // let holeNumber
+  let holeId
+  
+  // Parse/validate the input
+  try {
+    roomId = z.number().parse(req.body.roomId)
+    // holeNumber = z.number().parse(req.body.holeNumber)
+    holeId = z.number().parse(req.body.holeId)
+    userName = z.string().parse(req.body.username)
+  } catch (e) {
+    res.status(400).json(e)
+    return
+  }
+  try {
+    await validateUserIsInRoom(userName, roomId)
+  } catch (e) {
+    res.status(403).send("Unauthorized")
+    return
+  }
+  
+  try {
+    // change return value??
+    await removeHole(holeId, roomId)
+    res.status(200).send()
+    return
+  } catch (e) {
+    console.error(e)
+    res.status(500).send()
     return
   }
 

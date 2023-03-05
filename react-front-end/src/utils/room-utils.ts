@@ -1,3 +1,4 @@
+import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 export const scoreSchema = z.object({
@@ -133,3 +134,49 @@ export const createHoleFn = async ({
     throw e
   }
 }
+
+export const removeHole = async ({
+  holeId,
+  userName,
+  roomId
+} : {
+  holeId: number;
+  userName: string;
+  roomId: number;
+}) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/remove-hole`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body : JSON.stringify({ username: userName, roomId, holeId, }),
+    })
+    const r = res.json()
+
+    if (!res.ok) {
+      console.error(`Error removing hole`)
+      console.warn({ res, r })
+      throw new Error(`Error removing hole`)
+    }
+
+    return r
+  } catch (e) {
+    throw e
+  }
+}
+
+export const useRemoveHole = (queryclient: QueryClient) => useMutation({
+  mutationFn: removeHole,
+  onError: (err, removeHoleVariables, context) => {
+    console.error(err)
+  },
+  onSettled: () => {
+    queryclient.invalidateQueries(["players"])
+    queryclient.invalidateQueries(["holes"])
+    queryclient.invalidateQueries(["room"])
+  },
+})
+
+
+
