@@ -23,7 +23,12 @@ function Room() {
     const [creatingHole, setCreatingHole] = useState(false)
     const [newPar, setNewPar] = useState(0)
 
-    const [deletingHole, setDeletingHole] = useState(0)
+    const [deletingHole, setDeletingHole] = useState<{
+                    holeId: number;
+                    userName: string;
+                    roomId: number;
+                    number: number;
+    }>({holeId: 0, userName: '', roomId: 0, number: 0})
 
     useEffect(() => {
       localStorage.setItem("connectedGolfRoom", JSON.stringify(roomAndUser))
@@ -115,6 +120,7 @@ function Room() {
       }
     })
 
+  // TODO: Add optimistic updates to this mutation - maybe make that row grey?
     const removeHole = useRemoveHole(queryClient)
 
   const handleHoleScoreChange = (
@@ -144,10 +150,26 @@ function Room() {
     setCreatingHole(false)
   }
 
+  const handleRemoveHole = ({
+      holeId,
+      userName,
+      roomId
+    } : {
+      holeId: number;
+      userName: string;
+      roomId: number;
+      }) => {
+        removeHole.mutate({
+          holeId,
+          userName,
+          roomId,
+        })
+    }
+
   return <>
     <div
       className='flex flex-col md:justify-center items-center w-screen min-h-screen
-      bg-gray-800 text-stone-300 gap-8'
+      bg-gray-800 text-stone-300 gap-8 relative'
     >
       <h1 
         className='text-4xl md:text-3xl font-extrabold md:font-bold m-8 text-center'
@@ -185,10 +207,11 @@ function Room() {
                 ))}
                 <td 
                   className="px-2 text-center w-16 text-red-500" 
-                  onClick={() => removeHole.mutate({
+                  onClick={() => setDeletingHole({
                     holeId: hole.id,
                     userName: roomAndUser.user.name,
                     roomId: roomAndUser.room.id,
+                    number: hole.number,
                   })}
                 >
                   X
@@ -238,6 +261,31 @@ function Room() {
 
         </table>
       </div>
+
+      {deletingHole.holeId > 0 && (
+        <div className="bg-black opacity-40 v-100 h-screen absolute flex align-center justify-center">
+
+          <div className="bg-slate-400 p-6 flex flex-col justify-center align-center">
+            <h6 className="p-4">Delete hole {deletingHole.number}?</h6>
+            <div className="flex justify-center align-center">
+              <button
+                onClick={() => setDeletingHole({
+                  roomId: 0,
+                  number: 0,
+                  userName: "",
+                  holeId: 0,
+                })}
+              >Cancel</button>
+              <button
+                onClick={((_ ,deletingHole) => handleRemoveHole(deletingHole))}
+              >Ok</button>
+            </div>
+          </div>
+          
+
+        </div>
+        )
+      }
 
     </div>
     </>
