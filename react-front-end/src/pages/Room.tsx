@@ -167,6 +167,12 @@ function Room() {
           userName,
           roomId,
         })
+        setDeletingHole({
+          holeId: 0,
+          userName: '',
+          roomId: 0,
+          number: 0
+        })
     }
 
   return <>
@@ -289,7 +295,7 @@ function Room() {
                 className="p-2 px-4 rounded-xl w-32 bg-orange-800 hover:bg-orange-600
             text-stone-100"
                 onClick={() => {
-                  (deletingHole: TDeleteingHole) => handleRemoveHole(deletingHole)
+                  handleRemoveHole(deletingHole)
                 }}
               >OK</button>
             </div>
