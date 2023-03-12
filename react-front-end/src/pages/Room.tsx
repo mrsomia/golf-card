@@ -1,6 +1,6 @@
 import { useState, useEffect} from "react"
 import { useLoaderData, useNavigate, useParams } from "react-router-dom"
-import { createHoleFn, removeHole, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn, useRemoveHole } from "../utils/room-utils"
+import { createHoleFn, roomDataSchema, scoreQueryFn, scoreSchema, updateUserScoreFn, useRemoveHole } from "../utils/room-utils"
 import { z } from 'zod'
 
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
@@ -49,7 +49,7 @@ function Room() {
 
     const scoreMutation = useMutation({
       mutationFn: updateUserScoreFn,
-      onMutate: async ({ userScoreId, userId, score }) => {
+      onMutate: async ({ userScoreId, score }) => {
         await queryClient.cancelQueries({ queryKey: ["score"] })
         const previousState = queryClient.getQueryData(["score"])
 
@@ -85,7 +85,7 @@ function Room() {
   
     const createHoleMutation = useMutation({
       mutationFn: createHoleFn,
-      onMutate: async ({ userName, roomId, holeNumber, par }) => {
+      onMutate: async ({ roomId, holeNumber, par }) => {
         await queryClient.cancelQueries(["score"])
 
         const previousState = queryClient.getQueryData(["score"])

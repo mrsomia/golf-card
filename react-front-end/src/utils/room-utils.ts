@@ -1,4 +1,4 @@
-import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query'
+import { QueryClient, useMutation } from '@tanstack/react-query'
 import { z } from 'zod'
 
 export const scoreSchema = z.object({
@@ -165,7 +165,7 @@ export const removeHole = async ({
 
 export const useRemoveHole = (queryclient: QueryClient) => useMutation({
   mutationFn: removeHole,
-  onError: (err, removeHoleVariables, context) => {
+  onError: (err, removeHoleVariables, _context) => {
     console.error("error removing hole", { err, removeHoleVariables })
   },
   onSettled: () => {
