@@ -42,22 +42,9 @@ function Room() {
     }, [roomAndUser])
 
     const queryClient = useQueryClient()
-    const roomQuery = useQuery({
-      queryKey: ['room'], 
+    const scoreQuery = useQuery({
+      queryKey: ['score'], 
       queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
-      select: roomData => roomData.room,
-    })
-
-    const holeQuery = useQuery({
-      queryKey: ['holes'], 
-      queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
-      select: roomData => roomData.holes,
-    })
-
-    const playerQuery = useQuery({
-      queryKey: ['players'], 
-      queryFn: () => scoreQueryFn(roomAndUser.user.name, roomAndUser.room.name),
-      select: roomData => roomData.players,
     })
 
     const scoreMutation = useMutation({
@@ -143,14 +130,14 @@ function Room() {
     }
   
   const handleAddHole = () => {
-    if (!roomQuery.data) {
+    if (!scoreQuery.data) {
       console.error("Unable to find roomQuery data")
       return
     }
     createHoleMutation.mutate({
       userName: roomAndUser.user.name,
-      holeNumber: holeQuery.data?.at(-1)?.number ?? 0 + 1,
-      roomId: roomQuery.data.id,
+      holeNumber: scoreQuery.data.holes.at(-1)?.number ?? 0 + 1,
+      roomId: scoreQuery.data.room.id,
       par: newPar
     })
     setNewPar(0)
@@ -192,18 +179,18 @@ function Room() {
             <tr className="text-xl">
               <th className="p-2">Holes</th>
               <th className="p-2">Par</th>
-              {playerQuery.isSuccess && playerQuery.data.map(player => (
+              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
                 <th className="p-2" key={player.id}>{player.name}</th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {holeQuery.isSuccess && holeQuery.data.map((hole, i) => (
+            {scoreQuery.isSuccess && scoreQuery.data.holes.map((hole, i) => (
               <tr className="text-lg" key={hole.id}>
                 <td>{hole.number}</td>
                 <td>{hole.par}</td>
-                {playerQuery.isSuccess && playerQuery.data.map((player, j) => (
+                {scoreQuery.data.players.map((player, j) => (
                   <td key={`${player.id}${hole.id}`}>
                     <input
                       className="bg-gray-800 w-16 text-center"
@@ -228,9 +215,9 @@ function Room() {
               </tr>
             ))}
 
-            {creatingHole && holeQuery.data && (
+            {creatingHole && scoreQuery.data && (
               <tr>
-                <td>{(holeQuery.data?.at(-1)?.number ?? 0) + 1}</td>
+                <td>{(scoreQuery.data.holes.at(-1)?.number ?? 0) + 1}</td>
                 <td>
                   <input 
                       className="bg-gray-800 w-16 text-center"
@@ -254,7 +241,7 @@ function Room() {
             <tr className="text-lg py-2">
               <td className="py-4">Total</td>
               <td></td>
-              {playerQuery.isSuccess && playerQuery.data.map(player => (
+              {scoreQuery.isSuccess && scoreQuery.data.players.map(player => (
                 <td key={`total${player.id}`}>{player.scores.reduce((p,v) => p + v.score, 0)}</td>
               ))}
             </tr>
