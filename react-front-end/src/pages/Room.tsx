@@ -104,6 +104,15 @@ function Room() {
             lastAccessed: (new Date()).toISOString(),
           })
 
+          scoreData.players.forEach(player => {
+            player.scores.push({
+              id: 99999999,
+              score: 0,
+              holeId: 99999999,
+              lastAccessed: (new Date()).toISOString(),
+              userId: player.id
+            })
+          })
 
           return scoreData
         })
