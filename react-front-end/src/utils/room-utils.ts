@@ -152,15 +152,12 @@ export const removeHole = async ({
       },
       body : JSON.stringify({ username: userName, roomId, holeId, }),
     })
-    const r = res.json()
 
     if (!res.ok) {
       console.error(`Error removing hole`)
-      console.warn({ res, r })
+      console.warn({ res })
       throw new Error(`Error removing hole`)
     }
-
-    return r
   } catch (e) {
     throw e
   }

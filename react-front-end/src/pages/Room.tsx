@@ -75,6 +75,7 @@ function Room() {
         return { previousState }
       },
       onError: (err, scoreVariables, context) => {
+        console.error("Error Updating score", { err, scoreVariables })
         if (context) {
           queryClient.setQueryData(["score"], context.previousState)
         }
