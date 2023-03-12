@@ -169,12 +169,10 @@ export const removeHole = async ({
 export const useRemoveHole = (queryclient: QueryClient) => useMutation({
   mutationFn: removeHole,
   onError: (err, removeHoleVariables, context) => {
-    console.error(err)
+    console.error("error removing hole", { err, removeHoleVariables })
   },
   onSettled: () => {
-    queryclient.invalidateQueries(["players"])
-    queryclient.invalidateQueries(["holes"])
-    queryclient.invalidateQueries(["room"])
+    queryclient.invalidateQueries(["score"])
   },
 })
 

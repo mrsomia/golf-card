@@ -50,51 +50,53 @@ function Room() {
     const scoreMutation = useMutation({
       mutationFn: updateUserScoreFn,
       onMutate: async ({ userScoreId, userId, score }) => {
-        await queryClient.cancelQueries({ queryKey: ["players"] })
-        const previousState = queryClient.getQueryData(["players"])
+        await queryClient.cancelQueries({ queryKey: ["score"] })
+        const previousState = queryClient.getQueryData(["score"])
 
-        queryClient.setQueryData(["players"], (old: unknown)  => {
+        queryClient.setQueryData(["score"], (old: unknown)  => {
           let players
+          let scoreData
           try{
-            players = scoreSchema.shape.players.parse(old)
+            scoreData = scoreSchema.parse(old)
+            players = scoreData.players
           } catch (e) {
             return old
           }
           if (players[0].name !== roomAndUser.user.name) {
             console.error("First player is not the current user")
-            return players
+            return scoreData
           }
           const oldUserScoreIndex = players[0].scores.findIndex(score => score.id === userScoreId)
-          if ( oldUserScoreIndex < 0 ) return players
-          players[0].scores[oldUserScoreIndex].score = score
-          return { players }
+          if ( oldUserScoreIndex < 0 ) return scoreData
+          scoreData.players[0].scores[oldUserScoreIndex].score = score
+          return scoreData
         })
 
         return { previousState }
       },
       onError: (err, scoreVariables, context) => {
         if (context) {
-          queryClient.setQueryData(["players"], context.previousState)
+          queryClient.setQueryData(["score"], context.previousState)
         }
       },
-      onSettled: () => queryClient.invalidateQueries(["players"])
+      onSettled: () => queryClient.invalidateQueries(["score"])
     })
   
     const createHoleMutation = useMutation({
       mutationFn: createHoleFn,
       onMutate: async ({ userName, roomId, holeNumber, par }) => {
-        await queryClient.cancelQueries(["holes"])
+        await queryClient.cancelQueries(["score"])
 
-        const previousStateHoles = queryClient.getQueryData(["holes"])
+        const previousState = queryClient.getQueryData(["score"])
 
-        queryClient.setQueryData(["holes"], (old: unknown) => {
-          let holes
+        queryClient.setQueryData(["score"], (old: unknown) => {
+          let scoreData
           try {
-            holes = scoreSchema.shape.holes.parse(old)
+            scoreData = scoreSchema.parse(old)
           } catch (e) {
             return old
           }
-          holes.push({
+          scoreData.holes.push({
             number: holeNumber,
             roomId,
             id: 99999999,
@@ -102,14 +104,13 @@ function Room() {
             lastAccessed: (new Date()).toISOString(),
           })
 
-          return holes
+
+          return scoreData
         })
 
-        return { previousStateHoles }
+        return { previousState }
       },
       onSuccess: () => {
-        queryClient.invalidateQueries(["holes"])
-        queryClient.invalidateQueries(["players"])
         queryClient.invalidateQueries(["score"])
       }
     })
