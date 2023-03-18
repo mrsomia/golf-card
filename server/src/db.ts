@@ -50,24 +50,25 @@ export async function upsertUserToDb(username: string, roomId: number) {
         }
     })
 
-    user = await prisma.user.upsert({
-      where: {
-        id: user?.id,
-      },
-      update: {
-        lastAccessed: new Date(),
-        roomId,
-      },
-      create: {
-        name: username,
-        lastAccessed: new Date(),
-        roomId,
-      },
-      include: {
-        room: true,
-      },
-    })
-
+    if (user) {
+      user = await prisma.user.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          lastAccessed: new Date(),
+          roomId,
+        },
+      })
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: username,
+          lastAccessed: new Date(),
+          roomId,
+        }
+      })
+    }
 
     return user
 }
