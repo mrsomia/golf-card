@@ -17,10 +17,11 @@ import {
   removeHole,
 } from "./db.js";
 
-// Commented out for dev
-// scheduleJob('*/15 * * * *', async function() {
-//   deleteStaleDBItems()
-// })
+if (process.env.NODE_ENV === 'production') {
+  scheduleJob('*/15 * * * *', async function() {
+    deleteStaleDBItems()
+  })
+}
 
 const port = process.env.PORT || 8080
 
