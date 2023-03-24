@@ -244,13 +244,22 @@ function Room() {
                       type="number"
                       />
                 </td>
-                <td className="py-4" colSpan={999}>
+                <td className="py-4" colSpan={Math.max(scoreQuery.data.players.length -1, 1)}>
                   <
                     button 
                     className="text-center p-2 px-3"
                     onClick={handleAddHole}
                   >
                     Add
+                  </button>
+                </td>
+                <td className="py-4" colSpan={1}>
+                  <
+                    button 
+                    className="text-center p-2 px-3 text-red-500"
+                    onClick={() => setCreatingHole(false)}
+                  >
+                    Cancel
                   </button>
                 </td>
               </tr>
