@@ -175,7 +175,7 @@ function Room() {
 
   return <>
     <div
-      className='flex flex-col md:justify-center items-center w-screen min-w-fit
+      className='flex flex-col md:justify-center items-center max-w-screen w-screen md:min-w-fit 
       min-h-screen bg-gray-800 text-stone-300 gap-8 relative'
     >
       <h1 
@@ -191,7 +191,7 @@ function Room() {
       )}
       </h1>
 
-      <div className="px-4">
+      <div className="px-4 max-w-full overflow-x-scroll">
         <table className="text-center table-auto">
           <thead className="">
             <tr className="text-xl">
